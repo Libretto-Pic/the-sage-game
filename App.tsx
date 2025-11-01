@@ -15,6 +15,7 @@ import LandingPage from './components/LandingPage';
 import LoadingScreen from './components/LoadingScreen';
 import NewDayModal from './components/NewDayModal';
 import BreathingExercisePlayer from './components/BreathingExercisePlayer';
+import AchievementsPage from './components/AchievementsPage';
 import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions';
 import { exportPlayerState, importPlayerState } from './services/apiService';
 import { audioService } from './services/audioService';
@@ -55,11 +56,11 @@ export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children 
 
 const AppContent: React.FC = () => {
     const { 
-        playerState, view, loadingMessage, showNewDayModal,
+        playerState, view, loadingMessage, showNewDayModal, newlyUnlocked,
         startGame, importState, setView, completeMission, 
         startNewDay, confirmNewDay, saveJournalEntry,
         addRecurringMission, deleteRecurringMission, toggleNotifications,
-        toggleSound, resetGame
+        toggleSound, resetGame, clearNewlyUnlocked
     } = useGameState();
     const [activeBreathingExercise, setActiveBreathingExercise] = useState<string | null>(null);
     
@@ -75,6 +76,15 @@ const AppContent: React.FC = () => {
         window.addEventListener('click', init);
         return () => window.removeEventListener('click', init);
     }, []);
+
+    React.useEffect(() => {
+        if (newlyUnlocked.length > 0) {
+            newlyUnlocked.forEach(achievement => {
+                showToast(`🏆 Achievement Unlocked: ${achievement.name}`, 'success');
+            });
+            clearNewlyUnlocked();
+        }
+    }, [newlyUnlocked, showToast, clearNewlyUnlocked]);
 
     const handleImport = async () => {
         const state: PlayerState | null = await importPlayerState(showToast);
@@ -131,6 +141,8 @@ const AppContent: React.FC = () => {
                 return <ReflectionJournalPage saveJournalEntry={saveJournalEntry} journalEntries={playerState.journalEntries} />;
             case 'rituals':
                 return <RitualsPage recurringMissions={playerState.recurringMissions} addRecurringMission={addRecurringMission} deleteRecurringMission={deleteRecurringMission} />;
+            case 'achievements':
+                return <AchievementsPage unlockedAchievements={playerState.unlockedAchievements} />;
             case 'bosses':
                 return <BossBattlesPage />;
             case 'shop':

@@ -10,7 +10,8 @@ export type View =
   | 'journal'
   | 'bosses'
   | 'shop'
-  | 'settings';
+  | 'settings'
+  | 'achievements';
 
 export interface PlayerStats {
   hp: number; // Health Points: resilience, physical well-being.
@@ -53,6 +54,14 @@ export interface PlayerState {
   hasSeenNewDayModal: boolean;
   notificationsEnabled: boolean;
   soundEnabled: boolean;
+  unlockedAchievements: string[];
+}
+
+export interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+    icon: React.FC<{className?: string}>;
 }
 
 export interface BreathingStyle {

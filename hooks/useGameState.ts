@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { PlayerState, View, Mission, RecurringMission } from '../types';
+import type { PlayerState, View, Mission, RecurringMission, Achievement } from '../types';
 import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants';
 import { generateNewMissions } from '../services/geminiService';
 import { audioService } from '../services/audioService';
 import { notificationService } from '../services/notificationService';
 import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions';
+import { ALL_ACHIEVEMENTS, ACHIEVEMENT_CONDITIONS } from '../services/achievements';
 
 const initialPlayerState: PlayerState = {
   level: 30,
@@ -20,6 +21,7 @@ const initialPlayerState: PlayerState = {
   hasSeenNewDayModal: false,
   notificationsEnabled: false,
   soundEnabled: true,
+  unlockedAchievements: [],
 };
 
 const getInitialState = (): PlayerState | null => {
@@ -44,6 +46,35 @@ export const useGameState = () => {
   const [view, setView] = useState<View>('dashboard');
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showNewDayModal, setShowNewDayModal] = useState(false);
+  const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement[]>([]);
+
+  const clearNewlyUnlocked = useCallback(() => {
+    setNewlyUnlocked([]);
+  }, []);
+
+  const checkAndUnlockAchievements = useCallback((currentState: PlayerState): { newState: PlayerState, newlyUnlocked: Achievement[] } => {
+    const newlyUnlockedAchievements: Achievement[] = [];
+    
+    for (const achievement of ALL_ACHIEVEMENTS) {
+        if (!currentState.unlockedAchievements.includes(achievement.id)) {
+            const condition = ACHIEVEMENT_CONDITIONS[achievement.id];
+            if (condition && condition(currentState)) {
+                newlyUnlockedAchievements.push(achievement);
+            }
+        }
+    }
+
+    if (newlyUnlockedAchievements.length > 0) {
+        const newIds = newlyUnlockedAchievements.map(a => a.id);
+        const newState = {
+            ...currentState,
+            unlockedAchievements: [...currentState.unlockedAchievements, ...newIds]
+        };
+        return { newState, newlyUnlocked: newlyUnlockedAchievements };
+    }
+
+    return { newState: currentState, newlyUnlocked: [] };
+  }, []);
 
   useEffect(() => {
     if (playerState) {
@@ -109,28 +140,40 @@ export const useGameState = () => {
       const mission = prevState.missions.find(m => m.id === id);
       if (!mission || mission.isCompleted) return prevState;
 
-      let newState: PlayerState = {
-        ...prevState,
-        missions: newMissions,
-        xp: prevState.xp + mission.xp,
-        completedMissionHistory: [...prevState.completedMissionHistory, mission.title]
-      };
+      let newXp = prevState.xp + mission.xp;
+      let newSoulCoins = prevState.soulCoins;
 
-      newState = handleLevelUp(newState);
-      
       const allCompleted = newMissions.every(m => m.isCompleted);
       if (allCompleted) {
         if (prevState.soundEnabled) audioService.playAllMissionsComplete();
-        newState.xp += 10; 
-        newState.soulCoins += 2;
-        newState = handleLevelUp(newState);
+        newXp += 10; 
+        newSoulCoins += 2;
       } else {
         if (prevState.soundEnabled) audioService.playMissionComplete();
       }
 
-      return newState;
+      let tempState: PlayerState = {
+        ...prevState,
+        missions: newMissions,
+        xp: newXp,
+        soulCoins: newSoulCoins,
+        completedMissionHistory: [...prevState.completedMissionHistory, mission.title]
+      };
+
+      let stateAfterLevelUp = handleLevelUp(tempState);
+      
+      const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
+      if (newlyUnlocked.length > 0) {
+        setNewlyUnlocked(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+            return [...prev, ...uniqueNew];
+        });
+      }
+
+      return finalState;
     });
-  }, [playerState, handleLevelUp]);
+  }, [playerState, handleLevelUp, checkAndUnlockAchievements]);
   
   const startNewDay = useCallback(async () => {
     if (!playerState) return;
@@ -178,10 +221,20 @@ export const useGameState = () => {
         if (newState.notificationsEnabled) {
             notificationService.sendMissionReadyNotification(finalMissions.length);
         }
-        return newState;
+        
+        const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(newState);
+        if (newlyUnlocked.length > 0) {
+            setNewlyUnlocked(prev => {
+                const existingIds = new Set(prev.map(p => p.id));
+                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+                return [...prev, ...uniqueNew];
+            });
+        }
+
+        return finalState;
     });
     setLoadingMessage('');
-  }, [playerState]);
+  }, [playerState, checkAndUnlockAchievements]);
 
   const confirmNewDay = useCallback(() => {
     setPlayerState(prevState => prevState ? { ...prevState, hasSeenNewDayModal: true } : null);
@@ -189,8 +242,20 @@ export const useGameState = () => {
   }, []);
 
   const saveJournalEntry = useCallback((entry: string) => {
-    setPlayerState(prevState => prevState ? { ...prevState, journalEntries: [...prevState.journalEntries, entry] } : null);
-  }, []);
+    setPlayerState(prevState => {
+        if (!prevState) return null;
+        const newState = { ...prevState, journalEntries: [...prevState.journalEntries, entry] };
+        const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(newState);
+        if (newlyUnlocked.length > 0) {
+             setNewlyUnlocked(prev => {
+                const existingIds = new Set(prev.map(p => p.id));
+                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+                return [...prev, ...uniqueNew];
+            });
+        }
+        return finalState;
+    });
+  }, [checkAndUnlockAchievements]);
   
   const addRecurringMission = useCallback((mission: Omit<RecurringMission, 'id' | 'startDay'>) => {
     setPlayerState(prevState => {
@@ -243,6 +308,7 @@ export const useGameState = () => {
     view,
     loadingMessage,
     showNewDayModal,
+    newlyUnlocked,
     startGame,
     importState,
     setView,
@@ -255,5 +321,6 @@ export const useGameState = () => {
     toggleNotifications,
     toggleSound,
     resetGame,
+    clearNewlyUnlocked,
   };
 };

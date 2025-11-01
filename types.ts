@@ -29,6 +29,7 @@ export interface Mission {
   category: MissionCategory;
   isCompleted: boolean;
   xp: number;
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
 }
 
 export interface RecurringMission {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PlayerState, View, Mission, RecurringMission, Achievement } from '../types.ts';
@@ -93,7 +92,7 @@ export const useGameState = () => {
         ...m,
         id: uuidv4(),
         isCompleted: false,
-        xp: firstDay.xp,
+        xp: m.difficulty === 'Hard' ? firstDay.xp * 2 : firstDay.xp,
     })) : [];
 
     const newState = { ...initialPlayerState, missions, hasSeenNewDayModal: true };
@@ -182,7 +181,7 @@ export const useGameState = () => {
     setLoadingMessage("The Sage is consulting the ethereal plane for today's trials...");
     
     const newDay = playerState.day + 1;
-    let newMissions: Omit<Mission, 'id' | 'isCompleted' | 'xp'>[] = [];
+    let newMissions: (Omit<Mission, 'id' | 'isCompleted' | 'xp'> & { difficulty?: 'Easy' | 'Medium' | 'Hard' })[] = [];
     let missionXP = 20;
 
     const pregenDay = PREGENERATED_JOURNEY.find(j => j.day === newDay);
@@ -209,7 +208,12 @@ export const useGameState = () => {
         newMissions = [...recurringToday, ...generatedMissions];
     }
     
-    const finalMissions = newMissions.map(m => ({ ...m, id: uuidv4(), isCompleted: false, xp: missionXP }));
+    const finalMissions = newMissions.map(m => ({ 
+        ...m, 
+        id: uuidv4(), 
+        isCompleted: false, 
+        xp: m.difficulty === 'Hard' ? missionXP * 2 : missionXP 
+    }));
 
     setPlayerState(prevState => {
         if (!prevState) return null;

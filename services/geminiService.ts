@@ -1,4 +1,3 @@
-
 // Implemented Gemini Service to dynamically generate missions for the player.
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Mission } from '../types.ts';
@@ -29,8 +28,12 @@ const createMissionSchema = (categories: string[]) => {
                             type: Type.STRING,
                             description: `The category of the mission. Must be one of: ${categories.join(', ')}.`
                         },
+                        difficulty: {
+                            type: Type.STRING,
+                            description: "The difficulty of the mission. Must be one of: 'Easy', 'Medium', or 'Hard'."
+                        },
                     },
-                    required: ["title", "description", "category"]
+                    required: ["title", "description", "category", "difficulty"]
                 }
             }
         }
@@ -49,8 +52,11 @@ export const generateNewMissions = async (level: number, existingMissionTitles: 
         Generate ${categories.length} new, unique, and actionable daily missions for the user.
         Provide one mission for each of the following categories: ${categories.join(', ')}.
         The missions should be simple, concrete, and completable within a day.
-        The difficulty should be appropriate for Level ${level}. Lower levels (30-40) should have very simple tasks (e.g., 'Walk for 10 minutes', 'Read one article related to your career', 'Meditate for 2 minutes'). 
-        Higher levels (80+) can be more challenging (e.g., 'Complete a 45-minute high-intensity workout', 'Spend 90 minutes on a deep work task for a side project', 'Practice a new skill for 30 minutes').
+        
+        Assign a difficulty ('Easy', 'Medium', or 'Hard') appropriate for Level ${level}.
+        - Levels 30-45: Generate mostly 'Easy' missions, with one 'Medium' at most.
+        - Levels 46-70: A mix of 'Easy' and 'Medium' missions. Occasionally, one 'Hard' mission if it fits a theme.
+        - Levels 71+: Mostly 'Medium' and 'Hard' missions to challenge the user.
         
         Do not repeat any of these existing mission titles from today or previous days: ${existingMissionTitles.join(', ')}.
         Ensure one unique mission is generated for each requested category.
@@ -79,6 +85,7 @@ export const generateNewMissions = async (level: number, existingMissionTitles: 
                     title: mission.title,
                     description: mission.description,
                     category: mission.category,
+                    difficulty: mission.difficulty,
                 }));
             }
         }
@@ -90,9 +97,9 @@ export const generateNewMissions = async (level: number, existingMissionTitles: 
         console.error("Error generating missions with Gemini API:", error);
         // Fallback for only the requested categories
         const fallbackMissions: Omit<Mission, 'id' | 'isCompleted' | 'xp'>[] = [];
-        if (categories.includes('Health')) fallbackMissions.push({ title: 'Walk for 15 Minutes', description: 'Step outside and get your body moving.', category: 'Health' });
-        if (categories.includes('Wealth')) fallbackMissions.push({ title: 'Read One Industry Article', description: 'Stay updated with trends in your field.', category: 'Wealth' });
-        if (categories.includes('Mind')) fallbackMissions.push({ title: '5-Minute Meditation', description: 'Clear your mind and find your center.', category: 'Mind' });
+        if (categories.includes('Health')) fallbackMissions.push({ title: 'Walk for 15 Minutes', description: 'Step outside and get your body moving.', category: 'Health', difficulty: 'Easy' });
+        if (categories.includes('Wealth')) fallbackMissions.push({ title: 'Read One Industry Article', description: 'Stay updated with trends in your field.', category: 'Wealth', difficulty: 'Easy' });
+        if (categories.includes('Mind')) fallbackMissions.push({ title: '5-Minute Meditation', description: 'Clear your mind and find your center.', category: 'Mind', difficulty: 'Easy' });
         return fallbackMissions;
     }
 };

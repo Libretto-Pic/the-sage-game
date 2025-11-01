@@ -1,7 +1,11 @@
 
 import React from 'react';
 
-const EmergencyMissionCard: React.FC = () => {
+interface EmergencyMissionCardProps {
+    onPracticeBreathing: (styleName: string) => void;
+}
+
+const EmergencyMissionCard: React.FC<EmergencyMissionCardProps> = ({ onPracticeBreathing }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-yellow-400">
             <div className="flex items-center space-x-3 mb-3">
@@ -16,7 +20,10 @@ const EmergencyMissionCard: React.FC = () => {
             <p className="text-sm text-slate-600 mb-4">
                 Feeling overwhelmed or lost in the digital haze? The path is slipping. Recenter immediately.
             </p>
-            <button className="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-md transition-all duration-200 hover:bg-yellow-600">
+            <button 
+                onClick={() => onPracticeBreathing('The Eternal Breath')}
+                className="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-md transition-all duration-200 hover:bg-yellow-600"
+            >
                 Perform The Eternal Breath (1 min)
             </button>
         </div>

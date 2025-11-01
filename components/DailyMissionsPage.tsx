@@ -1,20 +1,31 @@
-// Implemented the dedicated page for viewing and completing daily missions.
 import React from 'react';
-import type { Mission } from '../types';
+import type { Mission, DailySummary } from '../types';
 import DailyMissions from './DailyMissions';
 
 interface DailyMissionsPageProps {
     missions: Mission[];
     onCompleteMission: (id: string) => void;
+    dailySummary: DailySummary | null;
 }
 
-const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission }) => {
+const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission, dailySummary }) => {
     const completedCount = missions.filter(m => m.isCompleted).length;
     const allCompleted = missions.length > 0 && completedCount === missions.length;
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
             <div>
+                {dailySummary && (
+                    <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <h1 className="text-xl font-bold font-serif text-slate-700">{dailySummary.title}</h1>
+                        <p className="text-sm text-slate-500 font-semibold">🧬 {dailySummary.realm}</p>
+                        <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <span><strong>XP per Task:</strong> {dailySummary.xpPerMission}</span>
+                            <span><strong>Recommended Breath:</strong> {dailySummary.breathStyle}</span>
+                            <span className="col-span-1 sm:col-span-2"><strong>Kazuki Watch:</strong> {dailySummary.kazukiWatch}</span>
+                        </div>
+                    </div>
+                )}
                 <h2 className="text-3xl font-bold font-serif text-slate-800 mb-2">Today's Trials ({completedCount}/{missions.length})</h2>
                 <p className="text-slate-600">Forge your will, one task at a time. The path to enlightenment is paved with small, consistent victories.</p>
             </div>

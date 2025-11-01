@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BREATHING_STYLES } from '../constants';
 import type { BreathingStyle as BreathingStyleType } from '../types';
 import BreathingExercisePlayer from './BreathingExercisePlayer';
 
 interface BreathingCodexProps {
     playerLevel: number;
+    onPractice: (styleName: string) => void;
 }
 
 const BreathingStyle: React.FC<{style: BreathingStyleType, isLocked: boolean, onPractice: () => void}> = ({ style, isLocked, onPractice }) => {
@@ -60,34 +61,24 @@ const BreathingStyle: React.FC<{style: BreathingStyleType, isLocked: boolean, on
     );
 };
 
-const BreathingCodex: React.FC<BreathingCodexProps> = ({ playerLevel }) => {
-    const [activeExercise, setActiveExercise] = useState<BreathingStyleType | null>(null);
-
+const BreathingCodex: React.FC<BreathingCodexProps> = ({ playerLevel, onPractice }) => {
     return (
-        <>
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-3xl font-bold font-serif text-slate-800">Breathing Codex</h2>
-                    <p className="mt-2 text-slate-600">Master the ancient breathing techniques. Each breath unlocks with progression through the realms.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {BREATHING_STYLES.map(style => (
-                        <BreathingStyle 
-                            key={style.name}
-                            style={style}
-                            isLocked={playerLevel < style.unlockLevel}
-                            onPractice={() => setActiveExercise(style)}
-                        />
-                    ))}
-                </div>
+        <div className="space-y-6">
+            <div>
+                <h2 className="text-3xl font-bold font-serif text-slate-800">Breathing Codex</h2>
+                <p className="mt-2 text-slate-600">Master the ancient breathing techniques. Each breath unlocks with progression through the realms.</p>
             </div>
-            {activeExercise && activeExercise.structuredTechnique && (
-                <BreathingExercisePlayer 
-                    exercise={activeExercise}
-                    onClose={() => setActiveExercise(null)}
-                />
-            )}
-        </>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {BREATHING_STYLES.map(style => (
+                    <BreathingStyle 
+                        key={style.name}
+                        style={style}
+                        isLocked={playerLevel < style.unlockLevel}
+                        onPractice={() => onPractice(style.name)}
+                    />
+                ))}
+            </div>
+        </div>
     );
 };
 

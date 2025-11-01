@@ -10,9 +10,10 @@ import EmergencyMissionCard from './EmergencyMissionCard';
 interface DashboardProps {
     playerState: PlayerState;
     saveJournalEntry: (entry: string) => void;
+    onPracticeBreathing: (styleName: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry }) => {
+const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry, onPracticeBreathing }) => {
     return (
         <div className="space-y-8">
             <div>
@@ -28,7 +29,7 @@ const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry }) 
 
                 <div className="space-y-6">
                     <UnlockedPowers playerLevel={playerState.level} />
-                    <EmergencyMissionCard />
+                    <EmergencyMissionCard onPracticeBreathing={onPracticeBreathing} />
                     <ReflectionJournal saveJournalEntry={saveJournalEntry} />
                 </div>
             </div>

@@ -25,8 +25,8 @@ const createMissionSchema = (categories: string[]) => ({
                     },
                     category: {
                         type: Type.STRING,
-                        enum: ['Health', 'Wealth', 'Mind'],
-                        description: "The category of the mission. Must be one of: Health, Wealth, or Mind."
+// FIX: The enum property is not supported in the responseSchema. The description is updated to be dynamic based on the provided categories.
+                        description: `The category of the mission. Must be one of: ${categories.join(', ')}.`
                     },
                 },
                 required: ["title", "description", "category"]

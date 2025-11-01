@@ -1,76 +1,92 @@
-// Implemented the main Sidebar navigation component.
+// Implemented the Sidebar component for application navigation. It displays links to all major sections of the app and visually indicates the current active view, allowing the user to switch between different content panels.
 import React from 'react';
 import type { View } from '../types';
 
 interface SidebarProps {
-    currentView: View;
-    setCurrentView: (view: View) => void;
-    playerLevel: number;
+  currentView: View;
+  setView: (view: View) => void;
+  playerLevel: number;
+  onExport: () => void;
+  onImport: () => void;
 }
 
 interface NavItemProps {
-    icon: React.ReactNode;
-    label: string;
-    isActive: boolean;
-    onClick: () => void;
+  label: string;
+  view: View;
+  icon: React.ReactNode;
+  currentView: View;
+  setView: (view: View) => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick }) => (
-    <button 
-        onClick={onClick}
-        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition-colors duration-200 ${
-            isActive 
-                ? 'bg-teal-500 text-white font-bold shadow-sm' 
-                : 'text-slate-500 font-medium hover:bg-slate-200 hover:text-slate-800'
-        }`}
+const NavItem: React.FC<NavItemProps> = ({ label, view, icon, currentView, setView }) => {
+  const isActive = currentView === view;
+  return (
+    <button
+      onClick={() => setView(view)}
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 ${
+        isActive
+          ? 'bg-teal-500 text-white font-bold shadow-md'
+          : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'
+      }`}
     >
-        {icon}
-        <span>{label}</span>
+      {icon}
+      <span className="text-md">{label}</span>
     </button>
-);
+  );
+};
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, playerLevel }) => {
-    const navItems: { view: View, label: string, icon: React.ReactNode }[] = [
-        { view: 'dashboard', label: 'Dashboard', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
-        { view: 'missions', label: 'Missions', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
-        { view: 'rituals', label: 'Rituals', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M4 4l1.5 1.5A9 9 0 0012 21a9 9 0 007.5-3.5M20 20l-1.5-1.5A9 9 0 0012 3a9 9 0 00-7.5 3.5" /></svg> },
-        { view: 'progress', label: 'Progress', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> },
-        { view: 'codex', label: 'Breathing Codex', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v11.494m-9-5.747h18" /></svg> },
-        { view: 'journal', label: 'Journal', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> },
-        { view: 'bosses', label: 'Boss Battles', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.657 7.343A8 8 0 0117.657 18.657z" /></svg> },
-        { view: 'shop', label: 'Soul Shop', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg> },
-        { view: 'levels', label: 'Level Realms', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg> },
-    ];
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, playerLevel, onExport, onImport }) => {
+  const navItems: { label: string, view: View, icon: React.ReactNode }[] = [
+    { label: 'Dashboard', view: 'dashboard', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
+    { label: 'Missions', view: 'missions', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
+    { label: 'Rituals', view: 'rituals', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { label: 'Progress', view: 'progress', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> },
+    { label: 'Levels', view: 'levels', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+    { label: 'Codex', view: 'codex', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> },
+    { label: 'Journal', view: 'journal', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> },
+    { label: 'Bosses', view: 'bosses', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.657 7.343A8 8 0 0117.657 18.657z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1014.12 11.88l-4.242 4.242z" /></svg> },
+    { label: 'Shop', view: 'shop', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg> },
+  ];
 
-    return (
-        <aside className="w-64 bg-white border-r border-slate-200 p-4 flex-col flex-shrink-0 hidden md:flex">
-            <div className="flex items-center space-x-2 mb-8">
-                 <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 3l-2.286 6.857L5 12l5.714 2.143L13 21l2.286-6.857L21 12l-5.714-2.143L13 3z" />
-                    </svg>
-                 </div>
-                <div>
-                    <h1 className="text-xl font-bold text-slate-800 font-serif">Sage's Path</h1>
-                    <p className="text-sm text-slate-500">Level {playerLevel}</p>
-                </div>
-            </div>
-            <nav className="flex-grow space-y-2">
-                {navItems.map(item => (
-                    <NavItem 
-                        key={item.view}
-                        icon={item.icon}
-                        label={item.label}
-                        isActive={currentView === item.view}
-                        onClick={() => setCurrentView(item.view)}
-                    />
-                ))}
-            </nav>
-            <div className="mt-auto text-center text-xs text-slate-400">
-                <p>&copy; {new Date().getFullYear()} Inner Compass</p>
-            </div>
-        </aside>
-    );
+  const bottomNavItems: { label: string, view: View, icon: React.ReactNode }[] = [
+      { label: 'Settings', view: 'settings', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> }
+  ];
+
+
+  return (
+    <div className="w-64 bg-slate-50 h-screen p-4 flex flex-col border-r border-slate-200">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-teal-600 font-serif">The Sage's Path</h1>
+        <p className="text-sm text-slate-500">Level {playerLevel}</p>
+      </div>
+      <nav className="space-y-2 flex-grow">
+        {navItems.map(item => (
+          <NavItem key={item.view} {...item} currentView={currentView} setView={setView} />
+        ))}
+      </nav>
+      <div className="space-y-2">
+        {bottomNavItems.map(item => (
+            <NavItem key={item.view} {...item} currentView={currentView} setView={setView} />
+        ))}
+      </div>
+      <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
+         <button
+            onClick={onImport}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 text-slate-500 hover:bg-slate-200 hover:text-slate-800"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            <span className="text-md">Import Progress</span>
+          </button>
+          <button
+            onClick={onExport}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 text-slate-500 hover:bg-slate-200 hover:text-slate-800"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span className="text-md">Export Progress</span>
+          </button>
+      </div>
+    </div>
+  );
 };
 
 export default Sidebar;

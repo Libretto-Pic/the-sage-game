@@ -1,17 +1,21 @@
-// Implemented the useGameState hook to manage all player state and game logic.
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { PlayerState, Mission, RecurringMission } from '../types';
-import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants';
+import { useState, useEffect, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import type { PlayerState, Mission, RecurringMission, View, DailySummary } from '../types';
+import { XP_PER_LEVEL } from '../constants';
 import { generateNewMissions } from '../services/geminiService';
+import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions';
 import { audioService } from '../services/audioService';
-import { getPlayerState, savePlayerState } from '../services/apiService';
+import { notificationService } from '../services/notificationService';
 
-const getTodayDateString = () => new Date().toISOString().split('T')[0];
+const isToday = (someDate: string) => {
+  const today = new Date();
+  const date = new Date(someDate);
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+};
 
-// A simple UUID generator to avoid external dependencies.
-const uuidv4 = () => `${1e7}-${1e3}-${4e3}-${8e3}-${1e11}`.replace(/[018]/g, c => (parseInt(c, 10) ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> parseInt(c, 10) / 4).toString(16));
-
-const initialPlayerState: PlayerState = {
+const getInitialState = (): PlayerState => ({
   level: 30,
   xp: 0,
   stats: { hp: 100, mp: 100, sp: 100, rp: 100 },
@@ -21,242 +25,221 @@ const initialPlayerState: PlayerState = {
   day: 1,
   missions: [],
   recurringMissions: [],
-};
+  notificationsEnabled: false,
+  dailySummary: null,
+});
 
-const useGameState = () => {
+export const useGameState = () => {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isNewDay, setIsNewDay] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingMissions, setIsGeneratingMissions] = useState(false);
-  
-  const previousPlayerState = useRef<PlayerState | null>(null);
+  const [view, setView] = useState<View>('dashboard');
+  const [showNewDayModal, setShowNewDayModal] = useState(false);
 
-  // Initial data load from localStorage
-  useEffect(() => {
-    const loadGame = () => {
-      setIsLoading(true);
-      try {
-        const savedState = getPlayerState();
-        if (savedState) {
-          setPlayerState(savedState);
-        } else {
-          // This is a new user, start them on Day 0 so the new day modal triggers.
-          setPlayerState({...initialPlayerState, lastPlayedDate: '1970-01-01'}); 
-        }
-      } catch (e) {
-        console.error("Failed to load game state:", e);
-        setError("Could not load your progress. Starting fresh.");
-        setPlayerState(initialPlayerState);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadGame();
+  const startGame = useCallback(() => {
+    const initialState = getInitialState();
+    startNewDay(initialState, true);
   }, []);
-  
-  // Effect for triggering audio based on state changes
-  useEffect(() => {
-    if (playerState && previousPlayerState.current) {
-        // Level Up
-        if (playerState.level > previousPlayerState.current.level) {
-            audioService.playLevelUp();
-        }
 
-        // All missions completed
-        const allMissionsDoneNow = playerState.missions.length > 0 && playerState.missions.every(m => m.isCompleted);
-        const allMissionsDonePreviously = previousPlayerState.current.missions.length > 0 && previousPlayerState.current.missions.every(m => m.isCompleted);
-        if (allMissionsDoneNow && !allMissionsDonePreviously) {
-            audioService.playAllMissionsComplete();
-        }
-    }
-    // Update previous state ref for the next render
-    previousPlayerState.current = playerState;
-  }, [playerState]);
-
-
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    if (playerState && !isLoading) { 
-      const { success } = savePlayerState(playerState);
-      if (!success) {
-          setError("Could not save your progress.");
-      } else {
-          setError(null); // Clear error on successful save
-      }
-    }
-  }, [playerState, isLoading]);
-
-  const startNewDay = useCallback(async () => {
-    if (!playerState) return;
-    
+  const setupNewDayMissions = useCallback(async (currentState: PlayerState) => {
     setIsGeneratingMissions(true);
+    
+    let newMissions: Mission[] = [];
+    let dailySummary: DailySummary | null = null;
+    
     try {
-      const missionsForToday: Mission[] = [];
-      const categoriesFilled = new Set<string>();
-      const currentDay = playerState.lastPlayedDate === '1970-01-01' ? 1 : playerState.day + 1;
-
-      // 1. Process recurring missions
-      if (playerState.recurringMissions) {
-        playerState.recurringMissions.forEach(rm => {
-          let isDue = false;
-          if (rm.frequencyType === 'daily') {
-            isDue = true;
-          } else if (rm.frequencyType === 'every_x_days' && rm.frequencyValue > 0) {
-            if ((currentDay - rm.startDay) % rm.frequencyValue === 0) {
-              isDue = true;
-            }
-          }
-
-          if (isDue && !categoriesFilled.has(rm.category)) {
-            missionsForToday.push({
-              id: uuidv4(),
-              title: rm.title,
-              description: rm.description,
-              category: rm.category,
-              xp: 15, // Recurring missions are worth slightly more
-              isCompleted: false,
-            });
-            categoriesFilled.add(rm.category);
-          }
-        });
-      }
-
-      const categoriesToGenerate = MISSION_CATEGORIES.filter(c => !categoriesFilled.has(c));
-      let aiMissions: Mission[] = [];
-
-      // 2. Generate remaining missions with Gemini
-      if (categoriesToGenerate.length > 0) {
-        const newMissionTemplates = await generateNewMissions(playerState.level, [], categoriesToGenerate);
-        aiMissions = newMissionTemplates.map(m => ({
-          ...m,
-          id: uuidv4(),
-          isCompleted: false,
-          xp: 10 + Math.floor(playerState.level / 10) * 5,
-        }));
-      }
-
-      const allNewMissions = [...missionsForToday, ...aiMissions];
-
-      setPlayerState(prevState => {
-        if (!prevState) return null;
-        return {
-          ...prevState,
-          missions: allNewMissions,
-          lastPlayedDate: getTodayDateString(),
-          day: currentDay,
-        };
-      });
-      setIsNewDay(false);
-    } catch(e) {
-      console.error("Failed to start new day:", e);
-      setError("The Sage could not divine your new missions. Please try again.");
-    } finally {
-      setIsGeneratingMissions(false);
-    }
-  }, [playerState]);
-  
-  useEffect(() => {
-    if (playerState && !isLoading) {
-      const today = getTodayDateString();
-      if (playerState.lastPlayedDate !== today) {
-        setIsNewDay(true);
-      }
-    }
-  }, [playerState, isLoading]);
-
-
-  const completeMission = (missionId: string) => {
-    setPlayerState(prevState => {
-      if (!prevState) return null;
-
-      let missionCompleted: Mission | undefined;
-      const updatedMissions = prevState.missions.map(m => {
-        if (m.id === missionId && !m.isCompleted) {
-          missionCompleted = m;
-          return { ...m, isCompleted: true };
+        // Use pre-generated content for the first 30 days
+        if (currentState.day <= PREGENERATED_JOURNEY.length) {
+            const dayContent = PREGENERATED_JOURNEY[currentState.day - 1];
+            newMissions = dayContent.missions.map(m => ({
+                ...m,
+                id: uuidv4(),
+                isCompleted: false,
+                xp: dayContent.xp,
+            }));
+            dailySummary = {
+                title: dayContent.title,
+                realm: dayContent.realm,
+                xpPerMission: dayContent.xp,
+                breathStyle: dayContent.breathStyle,
+                kazukiWatch: dayContent.kazukiWatch,
+            };
+        } else {
+            // After day 30, switch to dynamic generation
+            const existingMissionTitles = currentState.missions.map(m => m.title);
+            const generatedMissions = await generateNewMissions(currentState.level, existingMissionTitles, ['Health', 'Wealth', 'Mind']);
+            newMissions = generatedMissions.map(m => ({ ...m, id: uuidv4(), isCompleted: false, xp: 15 }));
+            // We can create a basic summary for dynamic days too if needed, or leave it null
+            dailySummary = {
+                title: `Day ${currentState.day}: The Unwritten Path`,
+                realm: "Realm of Emergence",
+                xpPerMission: 15, // Default XP for dynamic missions
+                breathStyle: "The Eternal Breath",
+                kazukiWatch: "The unknown demons of habit."
+            };
         }
-        return m;
-      });
+        
+        const finalState: PlayerState = {
+            ...currentState,
+            missions: newMissions,
+            dailySummary: dailySummary,
+            lastPlayedDate: new Date().toISOString(),
+        };
 
-      if (!missionCompleted) return prevState;
-      
-      audioService.playMissionComplete();
+        if (finalState.notificationsEnabled && newMissions.length > 0) {
+            notificationService.sendMissionReadyNotification(newMissions.length);
+        }
 
-      const newXp = prevState.xp + missionCompleted.xp;
-      const newLevel = prevState.level + Math.floor(newXp / XP_PER_LEVEL);
-      const remainingXp = newXp % XP_PER_LEVEL;
+        setPlayerState(finalState);
 
-      const newStats = newLevel > prevState.level 
-        ? { hp: 100, mp: 100, sp: 100, rp: 100 }
-        : { ...prevState.stats }; 
-      
-      newStats.mp = Math.max(0, newStats.mp - 10);
-      newStats.sp = Math.max(0, newStats.sp - 5);
+    } catch (error) {
+        console.error("Error setting up new day missions", error);
+        setPlayerState(currentState); // Revert to pre-generation state on error
+    } finally {
+        setIsGeneratingMissions(false);
+    }
+  }, []);
 
-      return {
-        ...prevState,
-        missions: updatedMissions,
-        xp: remainingXp,
+  const startNewDay = useCallback(async (state: PlayerState, isFirstDay = false) => {
+    const newState = {
+      ...state,
+      day: isFirstDay ? 1 : state.day + 1,
+      lastPlayedDate: new Date().toISOString()
+    };
+    if (!isFirstDay) {
+        newState.stats.hp = Math.min(100, newState.stats.hp + 5);
+        newState.stats.mp = Math.min(100, newState.stats.mp + 10);
+        newState.stats.sp = Math.min(100, newState.stats.sp + 5);
+        newState.stats.rp = Math.min(100, newState.stats.rp + 10);
+    }
+    setPlayerState(newState);
+    setShowNewDayModal(false);
+    await setupNewDayMissions(newState);
+  }, [setupNewDayMissions]);
+
+  const completeMission = useCallback((missionId: string) => {
+    if (!playerState) return;
+
+    const mission = playerState.missions.find(m => m.id === missionId);
+    if (!mission || mission.isCompleted) return;
+    
+    audioService.playMissionComplete();
+
+    const newXp = playerState.xp + mission.xp;
+    let newLevel = playerState.level;
+    let xpForNextLevel = newXp;
+
+    if (newXp >= XP_PER_LEVEL) {
+        newLevel += 1;
+        xpForNextLevel = newXp - XP_PER_LEVEL;
+        audioService.playLevelUp();
+    }
+    
+    const newMissions = playerState.missions.map(m => m.id === missionId ? { ...m, isCompleted: true } : m);
+    const allCompleted = newMissions.every(m => m.isCompleted);
+    if (allCompleted) {
+        audioService.playAllMissionsComplete();
+    }
+
+    const newStats = { ...playerState.stats };
+    switch(mission.category) {
+        case 'Health':
+            newStats.hp = Math.min(100, newStats.hp + 5);
+            newStats.sp = Math.min(100, newStats.sp + 5);
+            break;
+        case 'Wealth':
+            newStats.mp = Math.min(100, newStats.mp + 5);
+            break;
+        case 'Mind':
+            newStats.mp = Math.min(100, newStats.mp + 5);
+            newStats.rp = Math.min(100, newStats.rp + 5);
+            break;
+    }
+
+    setPlayerState(prevState => ({
+        ...prevState!,
         level: newLevel,
-        stats: newStats
-      };
-    });
-  };
-  
-  const saveJournalEntry = (entry: string) => {
+        xp: xpForNextLevel,
+        stats: newStats,
+        missions: newMissions,
+    }));
+  }, [playerState]);
+
+  const saveJournalEntry = useCallback((entry: string) => {
     setPlayerState(prevState => {
       if (!prevState) return null;
       return {
         ...prevState,
         journalEntries: [...prevState.journalEntries, entry],
-        stats: {
-          ...prevState.stats,
-          rp: Math.min(100, prevState.stats.rp + 15),
-        }
-      }
-    })
-  };
-
+      };
+    });
+  }, []);
+  
   const addRecurringMission = useCallback((mission: Omit<RecurringMission, 'id' | 'startDay'>) => {
+      setPlayerState(prevState => {
+        if (!prevState) return null;
+        const newMission: RecurringMission = {
+            ...mission,
+            id: uuidv4(),
+            startDay: prevState.day,
+        };
+        return {
+            ...prevState,
+            recurringMissions: [...prevState.recurringMissions, newMission]
+        }
+      });
+  }, []);
+
+  const deleteRecurringMission = useCallback((id: string) => {
     setPlayerState(prevState => {
       if (!prevState) return null;
-      const newMission: RecurringMission = {
-        ...mission,
-        id: uuidv4(),
-        startDay: prevState.day,
-      };
       return {
-        ...prevState,
-        recurringMissions: [...prevState.recurringMissions, newMission],
-      };
+          ...prevState,
+          recurringMissions: prevState.recurringMissions.filter(m => m.id !== id)
+      }
     });
   }, []);
 
-  const deleteRecurringMission = useCallback((missionId: string) => {
-    setPlayerState(prevState => {
-      if (!prevState) return null;
-      return {
-        ...prevState,
-        recurringMissions: prevState.recurringMissions.filter(m => m.id !== missionId),
-      };
-    });
+  const overwriteState = useCallback((newState: PlayerState) => {
+    setPlayerState(newState);
+    if (newState.lastPlayedDate && !isToday(newState.lastPlayedDate)) {
+      setShowNewDayModal(true);
+    }
   }, []);
+
+  const toggleNotifications = useCallback(async (): Promise<boolean> => {
+    if (!playerState) return false;
+
+    if (!playerState.notificationsEnabled) {
+        const permission = await notificationService.requestPermission();
+        if (permission !== 'granted') {
+            return false; // Failure
+        }
+    }
+    
+    setPlayerState(prevState => ({
+        ...prevState!,
+        notificationsEnabled: !prevState!.notificationsEnabled,
+    }));
+    return true; // Success
+  }, [playerState]);
 
   return {
     playerState,
-    isLoading: isLoading || isGeneratingMissions,
-    loadingMessage: isGeneratingMissions ? "The Sage is divining your tasks for the day..." : "Connecting to your spirit...",
-    error,
-    isNewDay,
+    isLoading: isLoading || (playerState !== null && isGeneratingMissions),
+    isGeneratingMissions,
+    view,
+    showNewDayModal,
     actions: {
+      startGame,
+      startNewDay: () => playerState && startNewDay(playerState),
       completeMission,
       saveJournalEntry,
-      startNewDay,
+      setView,
       addRecurringMission,
       deleteRecurringMission,
-    },
+      overwriteState,
+      toggleNotifications,
+    }
   };
 };
-
-export default useGameState;

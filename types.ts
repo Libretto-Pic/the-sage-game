@@ -1,4 +1,3 @@
-// Implemented type definitions for the application state and models.
 import React from 'react';
 
 export interface PlayerStats {
@@ -23,8 +22,16 @@ export interface RecurringMission {
   description: string;
   category: 'Health' | 'Wealth' | 'Mind';
   frequencyType: 'daily' | 'every_x_days';
-  frequencyValue: number; // e.g., 2 for every 2 days
+  frequencyValue: number; // e.g., for every 2 days
   startDay: number;
+}
+
+export interface DailySummary {
+  title: string;
+  realm: string;
+  xpPerMission: number;
+  breathStyle: string;
+  kazukiWatch: string;
 }
 
 export interface PlayerState {
@@ -37,6 +44,8 @@ export interface PlayerState {
   day: number;
   missions: Mission[];
   recurringMissions: RecurringMission[];
+  notificationsEnabled: boolean;
+  dailySummary: DailySummary | null;
 }
 
 export interface StructuredTechnique {
@@ -60,4 +69,4 @@ export interface Realm {
     theme: string;
 }
 
-export type View = 'dashboard' | 'missions' | 'progress' | 'codex' | 'journal' | 'bosses' | 'shop' | 'levels' | 'rituals';
+export type View = 'dashboard' | 'missions' | 'progress' | 'codex' | 'journal' | 'bosses' | 'shop' | 'levels' | 'rituals' | 'settings';

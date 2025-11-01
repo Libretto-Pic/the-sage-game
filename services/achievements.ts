@@ -1,7 +1,6 @@
-
 import React from 'react';
-import type { PlayerState, Achievement } from '../types.ts';
-import { BREATHING_STYLES } from './lore.ts';
+import type { PlayerState, Achievement } from '../types.js';
+import { BREATHING_STYLES } from './lore.js';
 
 // Re-using an icon from another component, a shield seems appropriate for achievements.
 const AchievementIcon: React.FC<{className?: string}> = ({ className }) => {

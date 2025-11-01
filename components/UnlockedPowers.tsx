@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { BREATHING_STYLES } from '../services/lore.ts';
+import { BREATHING_STYLES } from '../services/lore.js';
 
 const UnlockedPowers: React.FC<{ playerLevel: number }> = ({ playerLevel }) => {
     const unlocked = BREATHING_STYLES.filter(s => playerLevel >= s.unlockLevel);

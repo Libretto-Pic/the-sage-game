@@ -1,13 +1,12 @@
-
 // Implemented the Dashboard component to serve as the main landing view.
 import React from 'react';
-import type { PlayerState } from '../types.ts';
-import DailyMissions from './DailyMissions.tsx';
-import StatSheet from './StatSheet.tsx';
-import UnlockedPowers from './UnlockedPowers.tsx';
-import ReflectionJournal from './ReflectionJournal.tsx';
-import EmergencyMissionCard from './EmergencyMissionCard.tsx';
-import { LEVEL_TITLES } from '../services/lore.ts';
+import type { PlayerState } from '../types.js';
+import DailyMissions from './DailyMissions.js';
+import StatSheet from './StatSheet.js';
+import UnlockedPowers from './UnlockedPowers.js';
+import ReflectionJournal from './ReflectionJournal.js';
+import EmergencyMissionCard from './EmergencyMissionCard.js';
+import { LEVEL_TITLES } from '../services/lore.js';
 
 interface DashboardProps {
     playerState: PlayerState;

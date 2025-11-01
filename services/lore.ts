@@ -1,6 +1,5 @@
-
 import React from 'react';
-import type { BreathingStyle } from '../types.ts';
+import type { BreathingStyle } from '../types.js';
 
 //============== ICONS ==============//
 const IronLungIcon: React.FC<{className?: string}> = ({ className }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V6a2 2 0 012-2h2.586a1 1 0 01.707.293l1.414 1.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l1.414-1.414a1 1 0 01.707-.293H20a2 2 0 012 2v2a2 2 0 01-2 2h-1.586a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 006.586 10H5a2 2 0 01-2-2z" }), React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 14s.5-1 2-1 2.5 2 5 2 5-2 5-2 1.5 1 2 1" }));

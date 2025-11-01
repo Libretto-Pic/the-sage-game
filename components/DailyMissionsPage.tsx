@@ -1,7 +1,6 @@
-
 import React from 'react';
-import type { Mission, DailySummary } from '../types.ts';
-import DailyMissions from './DailyMissions.tsx';
+import type { Mission, DailySummary } from '../types.js';
+import DailyMissions from './DailyMissions.js';
 
 interface DailyMissionsPageProps {
     missions: Mission[];

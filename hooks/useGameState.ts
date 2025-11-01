@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { PlayerState, View, Mission, RecurringMission, Achievement } from '../types.ts';
-import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants.ts';
-import { generateNewMissions } from '../services/geminiService.ts';
-import { audioService } from '../services/audioService.ts';
-import { notificationService } from '../services/notificationService.ts';
-import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions.ts';
-import { ALL_ACHIEVEMENTS, ACHIEVEMENT_CONDITIONS } from '../services/achievements.ts';
+import type { PlayerState, View, Mission, RecurringMission, Achievement } from '../types.js';
+import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants.js';
+import { generateNewMissions } from '../services/geminiService.js';
+import { audioService } from '../services/audioService.js';
+import { notificationService } from '../services/notificationService.js';
+import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions.js';
+import { ALL_ACHIEVEMENTS, ACHIEVEMENT_CONDITIONS } from '../services/achievements.js';
 
 const initialPlayerState: PlayerState = {
   level: 30,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 const ReflectionJournal: React.FC<{ saveJournalEntry: (entry: string) => void }> = ({ saveJournalEntry }) => {

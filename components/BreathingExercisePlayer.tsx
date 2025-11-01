@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import type { BreathingStyle } from '../types.ts';
+import type { BreathingStyle } from '../types.js';
 
 interface BreathingExercisePlayerProps {
   exercise: BreathingStyle;

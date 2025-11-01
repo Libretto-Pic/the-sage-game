@@ -28,7 +28,7 @@ const ToastContext = React.createContext<(message: string, type: 'success' | 'er
 
 export const useToast = () => React.useContext(ToastContext);
 
-export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+export const ToastProvider = ({ children }: {children: React.ReactNode}) => {
     const [toasts, setToasts] = useState<{id: number; message: string; type: 'success' | 'error'}[]>([]);
 
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -54,7 +54,7 @@ export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children 
 };
 
 
-const AppContent: React.FC = () => {
+const AppContent = () => {
     const { 
         playerState, view, loadingMessage, showNewDayModal, newlyUnlocked,
         startGame, importState, setView, completeMission, completeReadingBlock,

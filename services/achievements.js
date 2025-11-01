@@ -3,7 +3,7 @@ import type { PlayerState, Achievement } from '../types.js';
 import { BREATHING_STYLES } from './lore.js';
 
 // Re-using an icon from another component, a shield seems appropriate for achievements.
-const AchievementIcon: React.FC<{className?: string}> = ({ className }) => {
+const AchievementIcon = ({ className }: {className?: string}) => {
     return React.createElement('svg', {
         xmlns: "http://www.w3.org/2000/svg",
         className: className,

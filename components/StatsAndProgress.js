@@ -3,7 +3,7 @@ import { PlayerState } from '../types.js';
 import { REALMS, LEVEL_TITLES } from '../services/lore.js';
 import { XP_PER_LEVEL } from '../constants.js';
 
-const StatBar: React.FC<{ label: string; value: number; color: string; icon: React.ReactNode }> = ({ label, value, color, icon }) => (
+const StatBar = ({ label, value, color, icon }: { label: string; value: number; color: string; icon: React.ReactNode }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-4">
         <div className={`p-3 rounded-lg ${color.replace('500', '100')}`}>
              {icon}
@@ -20,7 +20,7 @@ const StatBar: React.FC<{ label: string; value: number; color: string; icon: Rea
     </div>
 );
 
-const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState }) => {
+const StatsAndProgress = ({playerState}: {playerState: PlayerState}) => {
     const { level, xp, stats, soulCoins } = playerState;
     const currentRealm = REALMS.find(r => {
         if (r.levelRange.includes('-')) {

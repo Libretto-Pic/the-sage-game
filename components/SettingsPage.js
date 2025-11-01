@@ -8,13 +8,13 @@ interface SettingsPageProps {
   onResetGame: () => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ 
+const SettingsPage = ({ 
     notificationsEnabled, 
     onToggleNotifications,
     soundEnabled,
     onToggleSound,
     onResetGame 
-}) => {
+}: SettingsPageProps) => {
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset all your progress? This action cannot be undone.")) {

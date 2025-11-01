@@ -6,7 +6,7 @@ interface AchievementsPageProps {
   unlockedAchievements: string[];
 }
 
-const AchievementCard: React.FC<{achievement: Achievement, isUnlocked: boolean}> = ({ achievement, isUnlocked }) => {
+const AchievementCard = ({ achievement, isUnlocked }: {achievement: Achievement, isUnlocked: boolean}) => {
     const cardClasses = `
         bg-white p-6 rounded-xl shadow-sm border border-slate-200 transition-all duration-300 flex items-start space-x-4
         ${isUnlocked ? 'opacity-100' : 'opacity-50 bg-slate-50'}
@@ -26,7 +26,7 @@ const AchievementCard: React.FC<{achievement: Achievement, isUnlocked: boolean}>
 };
 
 
-const AchievementsPage: React.FC<AchievementsPageProps> = ({ unlockedAchievements }) => {
+const AchievementsPage = ({ unlockedAchievements }: AchievementsPageProps) => {
   return (
     <div className="space-y-6">
       <div>

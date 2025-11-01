@@ -6,7 +6,7 @@ interface LandingPageProps {
   onImport: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onImport }) => {
+const LandingPage = ({ onStart, onImport }: LandingPageProps) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 text-center p-4">
       <div className="max-w-2xl">

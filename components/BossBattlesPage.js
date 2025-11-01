@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BossBattlesPage: React.FC = () => {
+const BossBattlesPage = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-8 text-center">
       <div>

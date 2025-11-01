@@ -15,7 +15,7 @@ const MindIcon = () => (
 );
 
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ message }) => {
+const LoadingScreen = ({ message }: LoadingScreenProps) => {
   return (
     <>
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 text-slate-600 p-4 text-center">

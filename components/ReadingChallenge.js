@@ -7,7 +7,7 @@ interface ReadingChallengeProps {
 
 const XP_REWARDS = [25, 20, 15];
 
-const ReadingChallenge: React.FC<ReadingChallengeProps> = ({ progress, onComplete }) => {
+const ReadingChallenge = ({ progress, onComplete }: ReadingChallengeProps) => {
     const isCompleted = progress >= 3;
     const nextXp = isCompleted ? 0 : XP_REWARDS[progress];
 

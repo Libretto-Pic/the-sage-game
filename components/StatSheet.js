@@ -8,7 +8,7 @@ interface StatCardProps {
     color: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
+const StatCard = ({ icon, label, value, color }: StatCardProps) => (
     <div className={`${color} p-4 rounded-xl shadow-sm flex items-center space-x-4`}>
         <div className={`p-3 rounded-lg bg-white/60`}>
             {icon}
@@ -20,7 +20,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
     </div>
 );
 
-const StatSheet: React.FC<{ stats: PlayerStats }> = ({ stats }) => {
+const StatSheet = ({ stats }: { stats: PlayerStats }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard 

@@ -16,7 +16,7 @@ interface DashboardProps {
     completeReadingBlock: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry, onPracticeBreathing, completeReadingBlock }) => {
+const Dashboard = ({ playerState, saveJournalEntry, onPracticeBreathing, completeReadingBlock }: DashboardProps) => {
     const levelTitle = LEVEL_TITLES[playerState.level] || 'The Path Unfolds';
 
     return (

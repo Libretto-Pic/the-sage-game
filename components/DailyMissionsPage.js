@@ -11,7 +11,7 @@ interface DailyMissionsPageProps {
     onCompleteReadingBlock: () => void;
 }
 
-const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission, dailySummary, readingProgress, onCompleteReadingBlock }) => {
+const DailyMissionsPage = ({ missions, onCompleteMission, dailySummary, readingProgress, onCompleteReadingBlock }: DailyMissionsPageProps) => {
     const completedCount = missions.filter(m => m.isCompleted).length;
     const allCompleted = missions.length > 0 && completedCount === missions.length;
 

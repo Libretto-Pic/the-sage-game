@@ -8,7 +8,7 @@ interface BreathingCodexProps {
     onPractice: (styleName: string) => void;
 }
 
-const BreathingStyle: React.FC<{style: BreathingStyleType, isLocked: boolean, onPractice: () => void}> = ({ style, isLocked, onPractice }) => {
+const BreathingStyle = ({ style, isLocked, onPractice }: {style: BreathingStyleType, isLocked: boolean, onPractice: () => void}) => {
     
     const isPracticeable = !isLocked && style.structuredTechnique;
     
@@ -61,7 +61,7 @@ const BreathingStyle: React.FC<{style: BreathingStyleType, isLocked: boolean, on
     );
 };
 
-const BreathingCodex: React.FC<BreathingCodexProps> = ({ playerLevel, onPractice }) => {
+const BreathingCodex = ({ playerLevel, onPractice }: BreathingCodexProps) => {
     return (
         <div className="space-y-6">
             <div>

@@ -18,7 +18,7 @@ const initialFormState = {
     xp: 10,
 };
 
-const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurringMission, deleteRecurringMission }) => {
+const RitualsPage = ({ recurringMissions, addRecurringMission, deleteRecurringMission }: RitualsPageProps) => {
     const [formState, setFormState] = useState(initialFormState);
     const [error, setError] = useState('');
 

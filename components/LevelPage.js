@@ -6,7 +6,7 @@ interface LevelPageProps {
   playerLevel: number;
 }
 
-const LevelPage: React.FC<LevelPageProps> = ({ playerLevel }) => {
+const LevelPage = ({ playerLevel }: LevelPageProps) => {
   return (
     <div className="space-y-8">
       <div>

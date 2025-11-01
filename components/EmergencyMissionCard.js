@@ -4,7 +4,7 @@ interface EmergencyMissionCardProps {
     onPracticeBreathing: (styleName: string) => void;
 }
 
-const EmergencyMissionCard: React.FC<EmergencyMissionCardProps> = ({ onPracticeBreathing }) => {
+const EmergencyMissionCard = ({ onPracticeBreathing }: EmergencyMissionCardProps) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-yellow-400">
             <div className="flex items-center space-x-3 mb-3">

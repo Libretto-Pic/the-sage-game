@@ -9,7 +9,7 @@ interface DailyMissionsProps {
     isPreview?: boolean;
 }
 
-const DailyMissions: React.FC<DailyMissionsProps> = ({ missions, onCompleteMission, isPreview = false }) => {
+const DailyMissions = ({ missions, onCompleteMission, isPreview = false }: DailyMissionsProps) => {
     const title = isPreview ? "Today's Trials" : "Daily Missions";
     const description = isPreview 
         ? "A summary of your objectives. Navigate to the Missions tab to complete them."

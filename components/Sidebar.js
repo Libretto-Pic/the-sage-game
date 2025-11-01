@@ -18,7 +18,7 @@ interface NavItemProps {
   setView: (view: View) => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ label, view, icon, currentView, setView }) => {
+const NavItem = ({ label, view, icon, currentView, setView }: NavItemProps) => {
   const isActive = currentView === view;
   return (
     <button
@@ -35,7 +35,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, view, icon, currentView, setVi
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, playerLevel, onExport, onImport }) => {
+const Sidebar = ({ currentView, setView, playerLevel, onExport, onImport }: SidebarProps) => {
   const levelTitle = LEVEL_TITLES[playerLevel] || '';
 
   const navItems: { label: string, view: View, icon: React.ReactNode }[] = [
@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, playerLevel, on
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 text-slate-500 hover:bg-slate-200 hover:text-slate-800"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            <span className="text-md">Ultimate Export</span>
+            <span className="text-md">Export Progress</span>
           </button>
       </div>
     </div>

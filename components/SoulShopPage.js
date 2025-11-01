@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SoulShopPage: React.FC = () => {
+const SoulShopPage = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-8 text-center">
       <div>

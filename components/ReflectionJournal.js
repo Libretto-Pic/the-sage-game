@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ReflectionJournal: React.FC<{ saveJournalEntry: (entry: string) => void }> = ({ saveJournalEntry }) => {
+const ReflectionJournal = ({ saveJournalEntry }: { saveJournalEntry: (entry: string) => void }) => {
     const [entry, setEntry] = useState('');
     const [isSaved, setIsSaved] = useState(false);
 

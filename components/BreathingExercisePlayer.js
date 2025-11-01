@@ -8,7 +8,7 @@ interface BreathingExercisePlayerProps {
 
 type Phase = 'starting' | 'running' | 'paused' | 'finished';
 
-const BreathingExercisePlayer: React.FC<BreathingExercisePlayerProps> = ({ exercise, onClose }) => {
+const BreathingExercisePlayer = ({ exercise, onClose }: BreathingExercisePlayerProps) => {
   const { structuredTechnique } = exercise;
   
   const [phase, setPhase] = useState<Phase>('starting');

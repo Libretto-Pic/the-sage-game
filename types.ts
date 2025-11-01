@@ -1,72 +1,76 @@
+
 import React from 'react';
 
+export type View =
+  | 'dashboard'
+  | 'missions'
+  | 'rituals'
+  | 'progress'
+  | 'levels'
+  | 'codex'
+  | 'journal'
+  | 'bosses'
+  | 'shop'
+  | 'settings';
+
 export interface PlayerStats {
-  hp: number; // Health Points: physical well-being
-  mp: number; // Mana Points: mental energy, focus
-  sp: number; // Stamina Points: physical energy, endurance
-  rp: number; // Resolve Points: emotional resilience, spirit
+  hp: number; // Health Points: resilience, physical well-being.
+  mp: number; // Mana Points: mental energy, focus, creativity.
+  sp: number; // Spirit Points: willpower, discipline, emotional regulation.
+  rp: number; // Resolve Points: consistency, long-term commitment.
 }
+
+export type MissionCategory = 'Health' | 'Wealth' | 'Mind';
 
 export interface Mission {
   id: string;
   title: string;
   description: string;
-  category: 'Health' | 'Wealth' | 'Mind';
-  xp: number;
+  category: MissionCategory;
   isCompleted: boolean;
+  xp: number;
 }
 
 export interface RecurringMission {
-  id: string;
-  title: string;
-  description: string;
-  category: 'Health' | 'Wealth' | 'Mind';
-  frequencyType: 'daily' | 'every_x_days';
-  frequencyValue: number; // e.g., for every 2 days
-  startDay: number;
-}
-
-export interface DailySummary {
-  title: string;
-  realm: string;
-  xpPerMission: number;
-  breathStyle: string;
-  kazukiWatch: string;
+    id: string;
+    title: string;
+    description: string;
+    category: MissionCategory;
+    frequencyType: 'daily' | 'every_x_days';
+    frequencyValue: number; // 1 for daily, >1 for every_x_days
+    startDay: number;
 }
 
 export interface PlayerState {
   level: number;
   xp: number;
-  stats: PlayerStats;
-  soulCoins: number;
-  lastPlayedDate: string | null;
-  journalEntries: string[];
   day: number;
+  stats: PlayerStats;
   missions: Mission[];
+  completedMissionHistory: string[];
+  journalEntries: string[];
+  soulCoins: number;
   recurringMissions: RecurringMission[];
-  notificationsEnabled: boolean;
-  dailySummary: DailySummary | null;
-}
-
-export interface StructuredTechnique {
-  steps: { type: 'Inhale' | 'Exhale' | 'Hold'; duration: number }[];
-  reps: number;
+  hasSeenNewDayModal: boolean;
 }
 
 export interface BreathingStyle {
-  name: string;
-  description: string;
-  technique: string;
-  whenToUse: string;
-  unlockLevel: number;
-  icon: React.FC<{className?: string}>;
-  structuredTechnique: StructuredTechnique | null;
-}
-
-export interface Realm {
     name: string;
-    levelRange: string;
-    theme: string;
+    description: string;
+    unlockLevel: number;
+    icon: React.FC<{className?: string}>;
+    technique: string;
+    whenToUse: string;
+    structuredTechnique?: {
+        reps: number;
+        steps: { type: 'Inhale' | 'Hold' | 'Exhale'; duration: number }[];
+    }
 }
 
-export type View = 'dashboard' | 'missions' | 'progress' | 'codex' | 'journal' | 'bosses' | 'shop' | 'levels' | 'rituals' | 'settings';
+export interface DailySummary {
+    title: string;
+    realm: string;
+    xpPerMission: number;
+    breathStyle: string;
+    kazukiWatch: string;
+}

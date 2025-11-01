@@ -3,15 +3,14 @@ import React from 'react';
 
 const BossBattlesPage: React.FC = () => {
   return (
-    <div className="text-center bg-white p-8 rounded-xl shadow-sm">
-      <h2 className="text-3xl font-bold font-serif text-slate-800">Boss Battles</h2>
-      <p className="mt-2 text-slate-600 max-w-2xl mx-auto">
-        Every 5 levels, you will face a Boss—a manifestation of an inner demon like Procrastination, Self-Doubt, or Impatience. These are week-long trials designed to forge your will.
-      </p>
-      <div className="mt-8">
-        <div className="inline-block bg-slate-100 text-slate-500 font-semibold p-4 rounded-lg">
-            Your next Boss Battle unlocks at Level 35. Keep walking the path.
-        </div>
+    <div className="max-w-3xl mx-auto space-y-8 text-center">
+      <div>
+        <h2 className="text-3xl font-bold font-serif text-slate-800 mb-2">The Inner Sanctum: Boss Battles</h2>
+        <p className="text-slate-600">Confront and conquer your greatest inner demons. This feature is under construction by the Elder Sages.</p>
+      </div>
+      <div className="bg-white p-12 rounded-xl shadow-sm border-2 border-dashed border-slate-300">
+          <p className="text-slate-500 font-semibold">Coming Soon</p>
+          <p className="mt-2 text-slate-400">Prepare yourself, Wanderer. The true trials are yet to come.</p>
       </div>
     </div>
   );

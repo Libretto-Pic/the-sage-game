@@ -1,96 +1,56 @@
-// Implemented constants for game mechanics, realms, and breathing techniques.
-import type { Realm, BreathingStyle } from './types';
+
 import React from 'react';
+import type { BreathingStyle, MissionCategory } from './types';
 
-const HeartIcon: React.FC<{className?: string}> = ({ className }) => React.createElement('svg', {
-    xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
-}, React.createElement('path', {
-    strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-}));
-
-const SparklesIcon: React.FC<{className?: string}> = ({ className }) => React.createElement('svg', {
-    xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
-}, React.createElement('path', {
-    strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-}));
-
-const BrainIcon: React.FC<{className?: string}> = ({ className }) => React.createElement('svg', {
-    xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
-}, React.createElement('path', {
-    strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-}));
-
-const ShieldIcon: React.FC<{className?: string}> = ({ className }) => React.createElement('svg', {
-    xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor"
-}, React.createElement('path', {
-    strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-}));
-
-
+export const MISSION_CATEGORIES: MissionCategory[] = ['Health', 'Wealth', 'Mind'];
 export const XP_PER_LEVEL = 100;
 
-export const REALMS: Realm[] = [
-    { name: 'Realm of Awakening', levelRange: 'Levels 30-39', theme: 'Break the shackles of modern life and discover your inner power.' },
-    { name: 'Realm of Discipline', levelRange: 'Levels 40-49', theme: 'Forge unwavering consistency and build systems for success.' },
-    { name: 'Realm of Resilience', levelRange: 'Levels 50-59', theme: 'Face adversity head-on and learn to bend without breaking.' },
-    { name: 'Realm of Insight', levelRange: 'Levels 60-69', theme: 'Look within to understand your patterns, triggers, and true motivations.' },
-    { name: 'Realm of Flow', levelRange: 'Levels 70-79', theme: 'Master the art of effortless action and deep, focused work.' },
-    { name: 'Realm of Connection', levelRange: 'Levels 80-89', theme: 'Strengthen your bonds with others and the world around you.' },
-    { name: 'Realm of Sagehood', levelRange: 'Levels 90-100', theme: 'Integrate your wisdom and become a beacon of clarity and purpose.' },
-];
+const EternalBreathIcon: React.FC<{className?: string}> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>;
+const StoneFortressIcon: React.FC<{className?: string}> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>;
+const RiverOfClarityIcon: React.FC<{className?: string}> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.76 11h8.48a2 2 0 002-2V7a2 2 0 00-2-2h-8.48a2 2 0 00-2 2v2a2 2 0 002 2z" /></svg>;
 
 export const BREATHING_STYLES: BreathingStyle[] = [
     {
         name: 'The Eternal Breath',
-        description: 'The foundational technique for centering the mind.',
-        technique: 'A simple, deep, and rhythmic breath that anchors you in the present moment. Inhale through the nose for 4 seconds, hold for 4, exhale through the mouth for 6.',
-        whenToUse: 'Anytime you feel overwhelmed, distracted, or lost in "The Fog of Modern Life". Use as a daily ritual.',
+        description: 'The foundational technique for calming the mind.',
         unlockLevel: 30,
-        icon: HeartIcon,
+        icon: EternalBreathIcon,
+        technique: 'A simple box breathing technique. Inhale for 4 seconds, hold for 4, exhale for 4, and hold for 4. Repeat.',
+        whenToUse: 'Use when feeling scattered, anxious, or overwhelmed. Excellent for starting or ending your day.',
         structuredTechnique: {
-            steps: [
-                { type: 'Inhale', duration: 4 },
-                { type: 'Hold', duration: 4 },
-                { type: 'Exhale', duration: 6 },
-            ],
-            reps: 5
-        }
-    },
-    {
-        name: 'The Stone Fortress',
-        description: 'Builds resilience and mental fortitude.',
-        technique: 'Box breathing. Inhale for 4 seconds, hold for 4, exhale for 4, hold for 4. Visualise a solid, unshakeable fortress with each cycle.',
-        whenToUse: 'Before a difficult task, during a stressful situation, or when you need to endure.',
-        unlockLevel: 40,
-        icon: ShieldIcon,
-        structuredTechnique: {
+            reps: 7,
             steps: [
                 { type: 'Inhale', duration: 4 },
                 { type: 'Hold', duration: 4 },
                 { type: 'Exhale', duration: 4 },
                 { type: 'Hold', duration: 4 },
-            ],
-            reps: 5
+            ]
         }
     },
     {
-        name: 'The River of Clarity',
-        description: 'Clears mental clutter and enhances focus.',
-        technique: 'A powerful, quick exhale followed by a long, passive inhale. Focus on the sharp expulsion of air to clear your thoughts like a river washing away debris.',
-        whenToUse: 'When your mind is racing, you feel creatively blocked, or before a deep work session.',
-        unlockLevel: 50,
-        icon: BrainIcon,
-        structuredTechnique: null
+        name: 'The Stone Fortress',
+        description: 'A technique for building focus and resilience.',
+        unlockLevel: 40,
+        icon: StoneFortressIcon,
+        technique: 'A powerful, grounding breath. Inhale deeply through the nose, then a forceful, short exhale through the mouth.',
+        whenToUse: 'Before a difficult task, a challenging conversation, or when you need to summon inner strength and resolve.',
     },
     {
-        name: 'The Sun\'s Radiance',
-        description: 'Energizes the body and uplifts the spirit.',
-        technique: 'A series of short, sharp exhales through the nose while pulling the abdomen in, followed by passive inhales. A rapid, energizing rhythm.',
-        whenToUse: 'When feeling sluggish, tired, or in need of a natural energy boost. Avoid before sleep.',
-        unlockLevel: 60,
-        icon: SparklesIcon,
-        structuredTechnique: null
-    }
+        name: 'The River of Clarity',
+        description: 'A technique to clear mental fog and enhance insight.',
+        unlockLevel: 50,
+        icon: RiverOfClarityIcon,
+        technique: 'A longer exhale focused breath. Inhale for 4 seconds, then a slow, controlled exhale for 8 seconds.',
+        whenToUse: 'During moments of confusion, creative blocks, or when you need to see a problem from a new perspective.',
+    },
 ];
 
-export const MISSION_CATEGORIES = ['Health', 'Wealth', 'Mind'];
+export const REALMS = [
+  { levelRange: 'Levels 30-39', name: 'Realm of Awakening', theme: 'The first steps out of the fog. Focus is on building awareness and foundational habits.' },
+  { levelRange: 'Levels 40-49', name: 'Realm of Discipline', theme: 'The forge of will. This realm tests your consistency and commitment to the path.' },
+  { levelRange: 'Levels 50-59', name: 'Realm of Resilience', theme: 'Facing inner demons. Learn to navigate setbacks and emotional turmoil without losing your way.' },
+  { levelRange: 'Levels 60-69', name: 'Realm of Insight', theme: 'Connecting the dots. Deeper understanding of the self and the patterns that govern your life.' },
+  { levelRange: 'Levels 70-79', name: 'Realm of Mastery', theme: 'Sharpening the blade. Honing your skills and habits to a fine edge, achieving effortless execution.' },
+  { levelRange: 'Levels 80-89', name: 'Realm of Influence', theme: 'The Sage gives back. Your inner strength begins to positively impact those around you.' },
+  { levelRange: 'Levels 90-100', name: 'Realm of Enlightenment', theme: 'Transcending the self. The path becomes the destination. True peace and clarity are within reach.' },
+];

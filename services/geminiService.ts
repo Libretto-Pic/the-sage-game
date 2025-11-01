@@ -6,34 +6,35 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const model = 'gemini-2.5-flash';
 
-const createMissionSchema = (categories: string[]) => ({
-    type: Type.OBJECT,
-    properties: {
-        missions: {
-            type: Type.ARRAY,
-            description: `An array of ${categories.length} unique and actionable missions, one for each requested category.`,
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    title: {
-                        type: Type.STRING,
-                        description: "A short, engaging title for the mission (e.g., 'Hydration Ritual' or '15-Minute Focus Sprint')."
+const createMissionSchema = (categories: string[]) => {
+    return {
+        type: Type.OBJECT,
+        properties: {
+            missions: {
+                type: Type.ARRAY,
+                description: `An array of ${categories.length} unique and actionable missions, one for each requested category.`,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        title: {
+                            type: Type.STRING,
+                            description: "A short, engaging title for the mission (e.g., 'Hydration Ritual' or '15-Minute Focus Sprint')."
+                        },
+                        description: {
+                            type: Type.STRING,
+                            description: "A one-sentence, clear description of the task. Be specific and measurable (e.g., 'Drink 2 liters of water today.' or 'Work on a single task without distractions for 15 minutes.')."
+                        },
+                        category: {
+                            type: Type.STRING,
+                            description: `The category of the mission. Must be one of: ${categories.join(', ')}.`
+                        },
                     },
-                    description: {
-                        type: Type.STRING,
-                        description: "A one-sentence, clear description of the task. Be specific and measurable (e.g., 'Drink 2 liters of water today.' or 'Work on a single task without distractions for 15 minutes.')."
-                    },
-                    category: {
-                        type: Type.STRING,
-// FIX: The enum property is not supported in the responseSchema. The description is updated to be dynamic based on the provided categories.
-                        description: `The category of the mission. Must be one of: ${categories.join(', ')}.`
-                    },
-                },
-                required: ["title", "description", "category"]
+                    required: ["title", "description", "category"]
+                }
             }
         }
-    }
-});
+    };
+};
 
 
 export const generateNewMissions = async (level: number, existingMissionTitles: string[], categories: string[]): Promise<Omit<Mission, 'id' | 'isCompleted' | 'xp'>[]> => {

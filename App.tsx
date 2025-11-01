@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGameState } from './hooks/useGameState';
 import Sidebar from './components/Sidebar';
@@ -19,7 +18,6 @@ import BreathingExercisePlayer from './components/BreathingExercisePlayer';
 import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions';
 import { exportPlayerState, importPlayerState } from './services/apiService';
 import { audioService } from './services/audioService';
-import { notificationService } from './services/notificationService';
 import { BREATHING_STYLES } from './constants';
 import type { PlayerState } from './types';
 
@@ -60,12 +58,22 @@ const AppContent: React.FC = () => {
         playerState, view, loadingMessage, showNewDayModal,
         startGame, importState, setView, completeMission, 
         startNewDay, confirmNewDay, saveJournalEntry,
-        addRecurringMission, deleteRecurringMission 
+        addRecurringMission, deleteRecurringMission, toggleNotifications
     } = useGameState();
     const [activeBreathingExercise, setActiveBreathingExercise] = useState<string | null>(null);
-    const [notificationsEnabled, setNotificationsEnabled] = useState(notificationService.getPermissionStatus() === 'granted');
-
+    
     const showToast = useToast();
+
+    // Moved this hook to the top of the component to obey the Rules of Hooks.
+    // It must be called unconditionally on every render.
+    React.useEffect(() => {
+        const init = () => {
+            audioService.init();
+            window.removeEventListener('click', init);
+        };
+        window.addEventListener('click', init);
+        return () => window.removeEventListener('click', init);
+    }, []);
 
     const handleImport = async () => {
         const state: PlayerState | null = await importPlayerState(showToast);
@@ -81,14 +89,13 @@ const AppContent: React.FC = () => {
         }
     };
 
-    const toggleNotifications = async () => {
-        if (notificationsEnabled) {
-            setNotificationsEnabled(false);
-            showToast("Notifications disabled in-app.", 'success');
+    const handleToggleNotifications = async () => {
+        if (!playerState) return;
+        const success = await toggleNotifications();
+        if (playerState.notificationsEnabled) {
+             showToast("Notifications disabled.", 'success');
         } else {
-            const permission = await notificationService.requestPermission();
-            if (permission === 'granted') {
-                setNotificationsEnabled(true);
+            if (success) {
                 showToast("Notifications enabled!", 'success');
             } else {
                 showToast("Notification permissions were not granted.", 'error');
@@ -103,16 +110,6 @@ const AppContent: React.FC = () => {
     if (!playerState) {
         return <LandingPage onStart={startGame} onImport={handleImport} />;
     }
-
-    // Initialize audio on first user interaction
-    React.useEffect(() => {
-        const init = () => {
-            audioService.init();
-            window.removeEventListener('click', init);
-        };
-        window.addEventListener('click', init);
-        return () => window.removeEventListener('click', init);
-    }, []);
 
     const allMissionsCompleted = playerState.missions.every(m => m.isCompleted);
     const dailySummary = PREGENERATED_JOURNEY.find(d => d.day === playerState.day);
@@ -138,7 +135,7 @@ const AppContent: React.FC = () => {
             case 'shop':
                 return <SoulShopPage />;
             case 'settings':
-                return <SettingsPage notificationsEnabled={notificationsEnabled} onToggleNotifications={toggleNotifications} />;
+                return <SettingsPage notificationsEnabled={playerState.notificationsEnabled} onToggleNotifications={handleToggleNotifications} />;
             default:
                 return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise}/>;
         }

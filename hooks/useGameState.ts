@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PlayerState, View, Mission, RecurringMission } from '../types';
 import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants';
 import { generateNewMissions } from '../services/geminiService';
 import { audioService } from '../services/audioService';
+import { notificationService } from '../services/notificationService';
 import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions';
 
 const initialPlayerState: PlayerState = {
@@ -18,6 +18,7 @@ const initialPlayerState: PlayerState = {
   soulCoins: 0,
   recurringMissions: [],
   hasSeenNewDayModal: false,
+  notificationsEnabled: false,
 };
 
 const getInitialState = (): PlayerState | null => {
@@ -27,7 +28,7 @@ const getInitialState = (): PlayerState | null => {
       const parsedState = JSON.parse(savedState);
       // Basic validation
       if (parsedState.level && parsedState.stats) {
-        return parsedState;
+        return { ...initialPlayerState, ...parsedState };
       }
     }
     return null;
@@ -160,15 +161,21 @@ export const useGameState = () => {
         );
         newMissions = [...recurringToday, ...generatedMissions];
     }
+    
+    const finalMissions = newMissions.map(m => ({ ...m, id: uuidv4(), isCompleted: false, xp: missionXP }));
 
     setPlayerState(prevState => {
         if (!prevState) return null;
-        return {
+        const newState = {
             ...prevState,
             day: newDay,
-            missions: newMissions.map(m => ({ ...m, id: uuidv4(), isCompleted: false, xp: missionXP })),
+            missions: finalMissions,
             hasSeenNewDayModal: false,
         };
+        if (newState.notificationsEnabled) {
+            notificationService.sendMissionReadyNotification(finalMissions.length);
+        }
+        return newState;
     });
     setLoadingMessage('');
   }, [playerState]);
@@ -198,6 +205,23 @@ export const useGameState = () => {
     setPlayerState(prevState => prevState ? { ...prevState, recurringMissions: prevState.recurringMissions.filter(m => m.id !== id) } : null);
   }, []);
 
+  const toggleNotifications = useCallback(async (): Promise<boolean> => {
+    if (!playerState) return false;
+
+    const currentlyEnabled = playerState.notificationsEnabled;
+    if (currentlyEnabled) {
+        setPlayerState(p => p ? { ...p, notificationsEnabled: false } : null);
+        return true;
+    } else {
+        const permission = await notificationService.requestPermission();
+        if (permission === 'granted') {
+            setPlayerState(p => p ? { ...p, notificationsEnabled: true } : null);
+            return true;
+        }
+        return false;
+    }
+  }, [playerState]);
+
   return {
     playerState,
     view,
@@ -212,5 +236,6 @@ export const useGameState = () => {
     saveJournalEntry,
     addRecurringMission,
     deleteRecurringMission,
+    toggleNotifications,
   };
 };

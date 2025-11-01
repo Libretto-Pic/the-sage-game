@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export type View =
@@ -52,6 +51,7 @@ export interface PlayerState {
   soulCoins: number;
   recurringMissions: RecurringMission[];
   hasSeenNewDayModal: boolean;
+  notificationsEnabled: boolean;
 }
 
 export interface BreathingStyle {

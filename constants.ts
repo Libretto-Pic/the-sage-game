@@ -8,20 +8,6 @@ export const XP_PER_LEVEL = 100;
 // FIX: Replaced JSX syntax with React.createElement to be compatible with a .ts file extension.
 // The TypeScript compiler cannot parse JSX in .ts files; it requires a .tsx extension.
 // Using React.createElement is the equivalent of JSX and resolves the parsing errors.
-const EternalBreathIcon: React.FC<{className?: string}> = ({ className }) => {
-    return React.createElement('svg', {
-        xmlns: "http://www.w3.org/2000/svg",
-        className: className,
-        fill: "none",
-        viewBox: "0 0 24 24",
-        stroke: "currentColor"
-    }, React.createElement('path', {
-        strokeLinecap: "round",
-        strokeLinejoin: "round",
-        strokeWidth: 2,
-        d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"
-    }));
-};
 const StoneFortressIcon: React.FC<{className?: string}> = ({ className }) => {
     return React.createElement('svg', {
         xmlns: "http://www.w3.org/2000/svg",
@@ -51,16 +37,74 @@ const RiverOfClarityIcon: React.FC<{className?: string}> = ({ className }) => {
     }));
 };
 
+const BreathOfIronIcon: React.FC<{className?: string}> = ({ className }) => { // Lightning bolt for energy/activation
+    return React.createElement('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        className: className,
+        fill: "none",
+        viewBox: "0 0 24 24",
+        stroke: "currentColor"
+    }, React.createElement('path', {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        strokeWidth: 2,
+        d: "M13 10V3L4 14h7v7l9-11h-7z"
+    }));
+};
+const BreathOfFireIcon: React.FC<{className?: string}> = ({ className }) => { // Flame for 'fire'
+    return React.createElement('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        className: className,
+        fill: "none",
+        viewBox: "0 0 24 24",
+        stroke: "currentColor"
+    }, React.createElement('path', {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        strokeWidth: 2,
+        d: "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.657 7.343A8 8 0 0117.657 18.657z"
+    }));
+};
+const BreathOfSunIcon: React.FC<{className?: string}> = ({ className }) => { // Sun
+    return React.createElement('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        className: className,
+        fill: "none",
+        viewBox: "0 0 24 24",
+        stroke: "currentColor"
+    }, React.createElement('path', {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        strokeWidth: 2,
+        d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+    }));
+};
+const VitalFlowIcon: React.FC<{className?: string}> = ({ className }) => { // Icon for balance/total control
+    return React.createElement('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        className: className,
+        fill: "none",
+        viewBox: "0 0 24 24",
+        stroke: "currentColor"
+    }, React.createElement('path', {
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        strokeWidth: 2,
+        d: "M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+    }));
+};
+
+
 export const BREATHING_STYLES: BreathingStyle[] = [
     {
-        name: 'The Eternal Breath',
-        description: 'The foundational technique for calming the mind.',
+        name: 'Breath of Stone (Box Breathing)',
+        description: 'Balances oxygen and CO2, slows heart rate, centers mind.',
         unlockLevel: 30,
-        icon: EternalBreathIcon,
+        icon: StoneFortressIcon,
         technique: 'A simple box breathing technique. Inhale for 4 seconds, hold for 4, exhale for 4, and hold for 4. Repeat.',
-        whenToUse: 'Use when feeling scattered, anxious, or overwhelmed. Excellent for starting or ending your day.',
+        whenToUse: 'When angry, insulted, or provoked. Builds unshakeable composure.',
         structuredTechnique: {
-            reps: 7,
+            reps: 10,
             steps: [
                 { type: 'Inhale', duration: 4 },
                 { type: 'Hold', duration: 4 },
@@ -70,20 +114,77 @@ export const BREATHING_STYLES: BreathingStyle[] = [
         }
     },
     {
-        name: 'The Stone Fortress',
-        description: 'A technique for building focus and resilience.',
-        unlockLevel: 40,
-        icon: StoneFortressIcon,
-        technique: 'A powerful, grounding breath. Inhale deeply through the nose, then a forceful, short exhale through the mouth.',
-        whenToUse: 'Before a difficult task, a challenging conversation, or when you need to summon inner strength and resolve.',
+        name: 'Breath of Wind',
+        description: 'Activate parasympathetic system, restore focus.',
+        unlockLevel: 32,
+        icon: RiverOfClarityIcon,
+        technique: 'Inhale gently for 4s, hold for 2s, and exhale slowly for 8s. The long exhale physically tells your brain you\'re safe.',
+        whenToUse: 'When anxious, overwhelmed, or distracted.',
+        structuredTechnique: {
+            reps: 13, // Approx 3 minutes
+            steps: [
+                { type: 'Inhale', duration: 4 },
+                { type: 'Hold', duration: 2 },
+                { type: 'Exhale', duration: 8 },
+            ]
+        }
     },
     {
-        name: 'The River of Clarity',
-        description: 'A technique to clear mental fog and enhance insight.',
-        unlockLevel: 50,
-        icon: RiverOfClarityIcon,
-        technique: 'A longer exhale focused breath. Inhale for 4 seconds, then a slow, controlled exhale for 8 seconds.',
-        whenToUse: 'During moments of confusion, creative blocks, or when you need to see a problem from a new perspective.',
+        name: 'Breath of Iron',
+        description: 'Builds willpower and stabilizes the body under stress.',
+        unlockLevel: 40,
+        icon: BreathOfIronIcon,
+        technique: 'Inhale deeply for 4s, hold for 4s, then exhale powerfully through the mouth for 6-8s. Triggers controlled adrenaline release to build grit.',
+        whenToUse: 'Before tough work, workouts, or moments of resistance.',
+        structuredTechnique: {
+            reps: 15,
+            steps: [
+                { type: 'Inhale', duration: 4 },
+                { type: 'Hold', duration: 4 },
+                { type: 'Exhale', duration: 7 },
+            ]
+        }
+    },
+    {
+        name: 'Breath of Fire',
+        description: 'Energize the mind and wake up confidence.',
+        unlockLevel: 45,
+        icon: BreathOfFireIcon,
+        technique: 'Kapalabhati-style. Sit straight. Inhale normally. Then perform 30-50 short, fast, forceful exhales through the nose by contracting your lower belly (about 1 per second). Rest for 30 seconds. Repeat for 3 rounds. Do not practice right after meals or if you have high blood pressure.',
+        whenToUse: 'Before hard actions like public speaking, workouts, or confronting someone.',
+    },
+    {
+        name: 'Breath of Sun',
+        description: 'Shift mindset from suffering to strength, release mental tension.',
+        unlockLevel: 55,
+        icon: BreathOfSunIcon,
+        technique: 'Inhale deeply through the nose for 6s, hold for 2s while silently thinking of one thing you are grateful for, then exhale gently through the mouth for 8s.',
+        whenToUse: 'At the end of the day or after an emotional struggle.',
+        structuredTechnique: {
+            reps: 18, // Approx 5 minutes
+            steps: [
+                { type: 'Inhale', duration: 6 },
+                { type: 'Hold', duration: 2 },
+                { type: 'Exhale', duration: 8 },
+            ]
+        }
+    },
+    {
+        name: 'Vital Flow Breathing (VFB)',
+        description: 'A hybrid technique for 24/7 discipline. Balances oxygen, CO₂, and the nervous system for calm alertness.',
+        unlockLevel: 65,
+        icon: VitalFlowIcon,
+        technique: 'Core Pattern: Inhale (4s, belly then chest), hold (2s, feel solar plexus), exhale (6s, slow & complete), hold (2s, stay relaxed).',
+        whenToUse: 'Use one round between tasks to reset focus or four rounds before sleep to cleanse mental noise. The ultimate goal is for this to become your automatic, background breathing pattern.',
+        structuredTechnique: {
+            reps: 12,
+            steps: [
+                { type: 'Inhale', duration: 4 },
+                { type: 'Hold', duration: 2 },
+                { type: 'Exhale', duration: 6 },
+                { type: 'Hold', duration: 2 },
+            ]
+        }
     },
 ];
 

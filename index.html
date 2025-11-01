@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -30,6 +29,7 @@
         font-family: 'Lora', serif;
       }
     </style>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -44,5 +44,6 @@
 </head>
   <body class="bg-slate-100 text-slate-800">
     <div id="root"></div>
+    <script type="text/babel" data-presets="env,react,typescript" data-type="module" src="index.tsx"></script>
   </body>
 </html>

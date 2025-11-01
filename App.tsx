@@ -1,8 +1,7 @@
 // Implemented the main App component to manage views, state, and routing.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useGameState from './hooks/useGameState';
 
-import LandingPage from './components/LandingPage';
 import LoadingScreen from './components/LoadingScreen';
 import NewDayModal from './components/NewDayModal';
 import Sidebar from './components/Sidebar';
@@ -16,23 +15,31 @@ import SoulShopPage from './components/SoulShopPage';
 import LevelPage from './components/LevelPage';
 import RitualsPage from './components/RitualsPage';
 import type { View } from './types';
-
+import { audioService } from './services/audioService';
 
 const App: React.FC = () => {
     const { playerState, isLoading, loadingMessage, error, isNewDay, actions } = useGameState();
     const [currentView, setCurrentView] = useState<View>('dashboard');
 
-    if (isLoading) {
-        return <LoadingScreen message={loadingMessage} />;
-    }
+    // Initialize audio context on first user interaction (app load)
+    useEffect(() => {
+        const initAudio = () => {
+            audioService.init();
+            window.removeEventListener('click', initAudio);
+            window.removeEventListener('keydown', initAudio);
+        };
 
-    if (!playerState) {
-        return <LoadingScreen message="An error occurred while loading your journey." />;
-    }
-    
-    // If lastPlayedDate is null, it's a fresh start, show landing page.
-    if (playerState.lastPlayedDate === null) {
-        return <LandingPage onStart={actions.startGame} />;
+        window.addEventListener('click', initAudio);
+        window.addEventListener('keydown', initAudio);
+        
+        return () => {
+            window.removeEventListener('click', initAudio);
+            window.removeEventListener('keydown', initAudio);
+        };
+    }, []);
+
+    if (isLoading || !playerState) {
+        return <LoadingScreen message={loadingMessage || "Waking the ancient spirits..."} />;
     }
 
     const renderView = () => {

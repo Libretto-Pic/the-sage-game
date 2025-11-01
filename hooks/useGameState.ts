@@ -1,8 +1,10 @@
 // Implemented the useGameState hook to manage all player state and game logic.
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PlayerState, Mission, RecurringMission } from '../types';
 import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants';
 import { generateNewMissions } from '../services/geminiService';
+import { audioService } from '../services/audioService';
+import { getPlayerState, savePlayerState } from '../services/apiService';
 
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
@@ -27,39 +29,63 @@ const useGameState = () => {
   const [error, setError] = useState<string | null>(null);
   const [isNewDay, setIsNewDay] = useState(false);
   const [isGeneratingMissions, setIsGeneratingMissions] = useState(false);
+  
+  const previousPlayerState = useRef<PlayerState | null>(null);
 
+  // Initial data load from localStorage
   useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('sages-path-gamestate');
-      if (savedState) {
-        const parsedState = JSON.parse(savedState);
-        // Ensure recurringMissions is present
-        if (!parsedState.recurringMissions) {
-          parsedState.recurringMissions = [];
-        }
-        setPlayerState(parsedState);
-      } else {
-        setPlayerState(initialPlayerState);
-      }
-    } catch (e) {
-      console.error("Failed to load game state:", e);
-      setError("Could not load your progress. Starting fresh.");
-      setPlayerState(initialPlayerState);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (playerState) {
+    const loadGame = () => {
+      setIsLoading(true);
       try {
-        localStorage.setItem('sages-path-gamestate', JSON.stringify(playerState));
+        const savedState = getPlayerState();
+        if (savedState) {
+          setPlayerState(savedState);
+        } else {
+          // This is a new user, start them on Day 0 so the new day modal triggers.
+          setPlayerState({...initialPlayerState, lastPlayedDate: '1970-01-01'}); 
+        }
       } catch (e) {
-        console.error("Failed to save game state:", e);
-        setError("Could not save your progress.");
+        console.error("Failed to load game state:", e);
+        setError("Could not load your progress. Starting fresh.");
+        setPlayerState(initialPlayerState);
+      } finally {
+        setIsLoading(false);
       }
     }
+    loadGame();
+  }, []);
+  
+  // Effect for triggering audio based on state changes
+  useEffect(() => {
+    if (playerState && previousPlayerState.current) {
+        // Level Up
+        if (playerState.level > previousPlayerState.current.level) {
+            audioService.playLevelUp();
+        }
+
+        // All missions completed
+        const allMissionsDoneNow = playerState.missions.length > 0 && playerState.missions.every(m => m.isCompleted);
+        const allMissionsDonePreviously = previousPlayerState.current.missions.length > 0 && previousPlayerState.current.missions.every(m => m.isCompleted);
+        if (allMissionsDoneNow && !allMissionsDonePreviously) {
+            audioService.playAllMissionsComplete();
+        }
+    }
+    // Update previous state ref for the next render
+    previousPlayerState.current = playerState;
   }, [playerState]);
+
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (playerState && !isLoading) { 
+      const { success } = savePlayerState(playerState);
+      if (!success) {
+          setError("Could not save your progress.");
+      } else {
+          setError(null); // Clear error on successful save
+      }
+    }
+  }, [playerState, isLoading]);
 
   const startNewDay = useCallback(async () => {
     if (!playerState) return;
@@ -68,6 +94,7 @@ const useGameState = () => {
     try {
       const missionsForToday: Mission[] = [];
       const categoriesFilled = new Set<string>();
+      const currentDay = playerState.lastPlayedDate === '1970-01-01' ? 1 : playerState.day + 1;
 
       // 1. Process recurring missions
       if (playerState.recurringMissions) {
@@ -76,7 +103,7 @@ const useGameState = () => {
           if (rm.frequencyType === 'daily') {
             isDue = true;
           } else if (rm.frequencyType === 'every_x_days' && rm.frequencyValue > 0) {
-            if ((playerState.day - rm.startDay) % rm.frequencyValue === 0) {
+            if ((currentDay - rm.startDay) % rm.frequencyValue === 0) {
               isDue = true;
             }
           }
@@ -113,12 +140,11 @@ const useGameState = () => {
 
       setPlayerState(prevState => {
         if (!prevState) return null;
-        const isFirstDay = prevState.lastPlayedDate === null;
         return {
           ...prevState,
           missions: allNewMissions,
           lastPlayedDate: getTodayDateString(),
-          day: isFirstDay ? 1 : prevState.day + 1,
+          day: currentDay,
         };
       });
       setIsNewDay(false);
@@ -154,6 +180,8 @@ const useGameState = () => {
       });
 
       if (!missionCompleted) return prevState;
+      
+      audioService.playMissionComplete();
 
       const newXp = prevState.xp + missionCompleted.xp;
       const newLevel = prevState.level + Math.floor(newXp / XP_PER_LEVEL);
@@ -190,12 +218,6 @@ const useGameState = () => {
     })
   };
 
-  const startGame = () => {
-      if (playerState?.lastPlayedDate === null) {
-          startNewDay();
-      }
-  };
-
   const addRecurringMission = useCallback((mission: Omit<RecurringMission, 'id' | 'startDay'>) => {
     setPlayerState(prevState => {
       if (!prevState) return null;
@@ -224,14 +246,13 @@ const useGameState = () => {
   return {
     playerState,
     isLoading: isLoading || isGeneratingMissions,
-    loadingMessage: isGeneratingMissions ? "The Sage is divining your tasks for the day..." : "Awakening your inner spirit...",
+    loadingMessage: isGeneratingMissions ? "The Sage is divining your tasks for the day..." : "Connecting to your spirit...",
     error,
     isNewDay,
     actions: {
       completeMission,
       saveJournalEntry,
       startNewDay,
-      startGame,
       addRecurringMission,
       deleteRecurringMission,
     },

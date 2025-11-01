@@ -1,14 +1,17 @@
 import React from 'react';
 import type { Mission, DailySummary } from '../types.js';
 import DailyMissions from './DailyMissions.js';
+import ReadingChallenge from './ReadingChallenge.js';
 
 interface DailyMissionsPageProps {
     missions: Mission[];
     onCompleteMission: (id: string) => void;
     dailySummary: DailySummary | null;
+    readingProgress: number;
+    onCompleteReadingBlock: () => void;
 }
 
-const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission, dailySummary }) => {
+const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission, dailySummary, readingProgress, onCompleteReadingBlock }) => {
     const completedCount = missions.filter(m => m.isCompleted).length;
     const allCompleted = missions.length > 0 && completedCount === missions.length;
 
@@ -30,6 +33,7 @@ const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompl
                 <p className="text-slate-600">Forge your will, one task at a time. The path to enlightenment is paved with small, consistent victories.</p>
             </div>
             
+            <ReadingChallenge progress={readingProgress} onComplete={onCompleteReadingBlock} />
             <DailyMissions missions={missions} onCompleteMission={onCompleteMission} isPreview={false} />
 
             {allCompleted && (

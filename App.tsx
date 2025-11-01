@@ -57,7 +57,7 @@ export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children 
 const AppContent: React.FC = () => {
     const { 
         playerState, view, loadingMessage, showNewDayModal, newlyUnlocked,
-        startGame, importState, setView, completeMission, 
+        startGame, importState, setView, completeMission, completeReadingBlock,
         startNewDay, confirmNewDay, saveJournalEntry,
         addRecurringMission, deleteRecurringMission, toggleNotifications,
         toggleSound, resetGame, clearNewlyUnlocked
@@ -128,9 +128,9 @@ const AppContent: React.FC = () => {
     const renderView = () => {
         switch (view) {
             case 'dashboard':
-                return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise} />;
+                return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise} completeReadingBlock={completeReadingBlock} />;
             case 'missions':
-                return <DailyMissionsPage missions={playerState.missions} onCompleteMission={completeMission} dailySummary={dailySummary ? {title: dailySummary.title, realm: dailySummary.realm, xpPerMission: dailySummary.xp, breathStyle: dailySummary.breathStyle, kazukiWatch: dailySummary.kazukiWatch } : null} />;
+                return <DailyMissionsPage missions={playerState.missions} onCompleteMission={completeMission} dailySummary={dailySummary ? {title: dailySummary.title, realm: dailySummary.realm, xpPerMission: dailySummary.xp, breathStyle: dailySummary.breathStyle, kazukiWatch: dailySummary.kazukiWatch } : null} readingProgress={playerState.readingProgress} onCompleteReadingBlock={completeReadingBlock} />;
             case 'progress':
                 return <StatsAndProgress playerState={playerState} />;
             case 'levels':
@@ -156,7 +156,7 @@ const AppContent: React.FC = () => {
                             onResetGame={resetGame}
                         />;
             default:
-                return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise}/>;
+                return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise} completeReadingBlock={completeReadingBlock}/>;
         }
     };
     

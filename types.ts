@@ -40,6 +40,7 @@ export interface RecurringMission {
     frequencyType: 'daily' | 'every_x_days';
     frequencyValue: number; // 1 for daily, >1 for every_x_days
     startDay: number;
+    xp: number;
 }
 
 export interface PlayerState {
@@ -56,6 +57,7 @@ export interface PlayerState {
   notificationsEnabled: boolean;
   soundEnabled: boolean;
   unlockedAchievements: string[];
+  readingProgress: number; // 0, 1, or 2 for 30, 60, 90 mins
 }
 
 export interface Achievement {

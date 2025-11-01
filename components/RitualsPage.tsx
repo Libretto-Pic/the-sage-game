@@ -15,6 +15,7 @@ const initialFormState = {
     category: 'Health' as 'Health' | 'Wealth' | 'Mind',
     frequencyType: 'daily' as 'daily' | 'every_x_days',
     frequencyValue: 2,
+    xp: 10,
 };
 
 const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurringMission, deleteRecurringMission }) => {
@@ -31,14 +32,30 @@ const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurri
         setFormState(prevState => ({...prevState, frequencyValue: isNaN(value) ? 2 : value}));
     }
 
+    const handleXPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = parseInt(e.target.value, 10);
+        if (isNaN(value)) value = 5;
+        // Clamp the value while typing
+        if (value < 5) value = 5;
+        if (value > 15) value = 15;
+        setFormState(prevState => ({ ...prevState, xp: value }));
+    };
+
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+
         if (!formState.title.trim() || !formState.description.trim()) {
             setError('Title and description cannot be empty.');
             return;
         }
         if (formState.frequencyType === 'every_x_days' && formState.frequencyValue < 2) {
             setError('Frequency for "every x days" must be at least 2.');
+            return;
+        }
+        if (formState.xp < 5 || formState.xp > 15) {
+            setError('XP must be between 5 and 15.');
             return;
         }
         
@@ -48,9 +65,9 @@ const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurri
             category: formState.category,
             frequencyType: formState.frequencyType,
             frequencyValue: formState.frequencyType === 'daily' ? 1 : formState.frequencyValue,
+            xp: formState.xp,
         });
         setFormState(initialFormState);
-        setError('');
     };
 
     return (
@@ -58,13 +75,16 @@ const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurri
             <div>
                 <h2 className="text-3xl font-bold font-serif text-slate-800">Your Rituals</h2>
                 <p className="mt-2 text-slate-600">Discipline is forged through repetition. Define the core habits that build your inner fortress. These rituals will appear automatically as daily missions.</p>
+                 <div className="mt-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-md">
+                    <p className="text-sm">Note: A maximum of 50 XP from rituals will be scheduled on any given day. Rituals are prioritized in the order they appear below.</p>
+                </div>
             </div>
 
             {/* Form to add new ritual */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 className="text-xl font-bold text-slate-800 mb-4">Carve a New Ritual</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                          <div>
                             <label htmlFor="title" className="block text-sm font-medium text-slate-700">Title</label>
                             <input type="text" name="title" id="title" value={formState.title} onChange={handleInputChange} placeholder="e.g., Morning Hydration" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
@@ -75,10 +95,14 @@ const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurri
                                 {MISSION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
+                         <div>
+                            <label htmlFor="xp" className="block text-sm font-medium text-slate-700">XP Reward (5-15)</label>
+                            <input type="number" name="xp" id="xp" value={formState.xp} onChange={handleXPChange} min="5" max="15" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
-                        <textarea name="description" id="description" value={formState.description} onChange={handleInputChange} rows={3} placeholder="e.g., Drink a full glass of water upon waking." className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"></textarea>
+                        <textarea name="description" id="description" value={formState.description} onChange={handleInputChange} rows={2} placeholder="e.g., Drink a full glass of water upon waking." className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"></textarea>
                     </div>
                     <div>
                          <label className="block text-sm font-medium text-slate-700 mb-2">Frequency</label>
@@ -114,7 +138,7 @@ const RitualsPage: React.FC<RitualsPageProps> = ({ recurringMissions, addRecurri
                                 <p className="font-bold text-slate-800">{mission.title}</p>
                                 <p className="text-sm text-slate-600 mt-1">{mission.description}</p>
                                 <div className="mt-2 text-xs font-semibold inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                                    {mission.category} | {mission.frequencyType === 'daily' ? 'Daily' : `Every ${mission.frequencyValue} days`}
+                                    {mission.category} | {mission.frequencyType === 'daily' ? 'Daily' : `Every ${mission.frequencyValue} days`} | {mission.xp} XP
                                 </div>
                             </div>
                             <button onClick={() => deleteRecurringMission(mission.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1" aria-label="Delete Ritual">

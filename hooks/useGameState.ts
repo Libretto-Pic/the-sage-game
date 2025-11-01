@@ -22,6 +22,7 @@ const initialPlayerState: PlayerState = {
   notificationsEnabled: false,
   soundEnabled: true,
   unlockedAchievements: [],
+  readingProgress: 0,
 };
 
 const getInitialState = (): PlayerState | null => {
@@ -29,7 +30,7 @@ const getInitialState = (): PlayerState | null => {
     const savedState = localStorage.getItem('sagesPathGameState');
     if (savedState) {
       const parsedState = JSON.parse(savedState);
-      // Basic validation
+      // Basic validation and migration for older save files
       if (parsedState.level && parsedState.stats) {
         return { ...initialPlayerState, ...parsedState };
       }
@@ -174,6 +175,38 @@ export const useGameState = () => {
       return finalState;
     });
   }, [playerState, handleLevelUp, checkAndUnlockAchievements]);
+
+  const completeReadingBlock = useCallback(() => {
+    if (!playerState || playerState.readingProgress >= 3) return;
+
+    const xpRewards = [25, 20, 15];
+    const xpEarned = xpRewards[playerState.readingProgress];
+
+    setPlayerState(prevState => {
+        if (!prevState) return null;
+        
+        if (prevState.soundEnabled) audioService.playMissionComplete();
+
+        let tempState: PlayerState = {
+            ...prevState,
+            xp: prevState.xp + xpEarned,
+            readingProgress: prevState.readingProgress + 1,
+        };
+        
+        let stateAfterLevelUp = handleLevelUp(tempState);
+        
+        const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
+        if (newlyUnlocked.length > 0) {
+            setNewlyUnlocked(prev => {
+                const existingIds = new Set(prev.map(p => p.id));
+                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+                return [...prev, ...uniqueNew];
+            });
+        }
+        
+        return finalState;
+    });
+  }, [playerState, handleLevelUp, checkAndUnlockAchievements]);
   
   const startNewDay = useCallback(async () => {
     if (!playerState) return;
@@ -181,21 +214,31 @@ export const useGameState = () => {
     setLoadingMessage("The Sage is consulting the ethereal plane for today's trials...");
     
     const newDay = playerState.day + 1;
-    let newMissions: (Omit<Mission, 'id' | 'isCompleted' | 'xp'> & { difficulty?: 'Easy' | 'Medium' | 'Hard' })[] = [];
+    let newMissions: (Omit<Mission, 'id' | 'isCompleted'>)[] = [];
     let missionXP = 20;
 
     const pregenDay = PREGENERATED_JOURNEY.find(j => j.day === newDay);
     if (pregenDay) {
-        newMissions = pregenDay.missions;
+        newMissions = pregenDay.missions.map(m => ({ ...m, xp: m.difficulty === 'Hard' ? pregenDay.xp * 2 : pregenDay.xp }));
         missionXP = pregenDay.xp;
     } else {
-        const recurringToday = playerState.recurringMissions.filter(rm => {
+        const recurringTodaySource = playerState.recurringMissions.filter(rm => {
             if (rm.frequencyType === 'daily') return true;
             if (rm.frequencyType === 'every_x_days') {
                 return (newDay - rm.startDay) % rm.frequencyValue === 0;
             }
             return false;
         });
+
+        let ritualXPSoFar = 0;
+        const RITUAL_XP_CAP = 50;
+        const recurringToday = [];
+        for (const rm of recurringTodaySource) {
+            if (ritualXPSoFar + rm.xp <= RITUAL_XP_CAP) {
+                recurringToday.push(rm);
+                ritualXPSoFar += rm.xp;
+            }
+        }
 
         const recurringMissionCategories = new Set(recurringToday.map(rm => rm.category));
         const dynamicCategories = MISSION_CATEGORIES.filter(cat => !recurringMissionCategories.has(cat));
@@ -205,14 +248,18 @@ export const useGameState = () => {
             playerState.completedMissionHistory,
             dynamicCategories
         );
-        newMissions = [...recurringToday, ...generatedMissions];
+        const generatedMissionsWithXP = generatedMissions.map(m => ({
+            ...m,
+            xp: m.difficulty === 'Hard' ? missionXP * 2 : missionXP
+        }));
+
+        newMissions = [...recurringToday, ...generatedMissionsWithXP];
     }
     
     const finalMissions = newMissions.map(m => ({ 
         ...m, 
         id: uuidv4(), 
         isCompleted: false, 
-        xp: m.difficulty === 'Hard' ? missionXP * 2 : missionXP 
     }));
 
     setPlayerState(prevState => {
@@ -222,6 +269,7 @@ export const useGameState = () => {
             day: newDay,
             missions: finalMissions,
             hasSeenNewDayModal: false,
+            readingProgress: 0,
         };
         if (newState.notificationsEnabled) {
             notificationService.sendMissionReadyNotification(finalMissions.length);
@@ -318,6 +366,7 @@ export const useGameState = () => {
     importState,
     setView,
     completeMission,
+    completeReadingBlock,
     startNewDay,
     confirmNewDay,
     saveJournalEntry,

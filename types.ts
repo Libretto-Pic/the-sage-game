@@ -52,6 +52,7 @@ export interface PlayerState {
   recurringMissions: RecurringMission[];
   hasSeenNewDayModal: boolean;
   notificationsEnabled: boolean;
+  soundEnabled: boolean;
 }
 
 export interface BreathingStyle {

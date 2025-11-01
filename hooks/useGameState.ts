@@ -19,6 +19,7 @@ const initialPlayerState: PlayerState = {
   recurringMissions: [],
   hasSeenNewDayModal: false,
   notificationsEnabled: false,
+  soundEnabled: true,
 };
 
 const getInitialState = (): PlayerState | null => {
@@ -76,7 +77,9 @@ export const useGameState = () => {
   const handleLevelUp = useCallback((currentState: PlayerState): PlayerState => {
     if (currentState.xp < XP_PER_LEVEL) return currentState;
 
-    audioService.playLevelUp();
+    if (currentState.soundEnabled) {
+        audioService.playLevelUp();
+    }
     let newXp = currentState.xp;
     let newLevel = currentState.level;
     let newSoulCoins = currentState.soulCoins;
@@ -117,12 +120,12 @@ export const useGameState = () => {
       
       const allCompleted = newMissions.every(m => m.isCompleted);
       if (allCompleted) {
-        audioService.playAllMissionsComplete();
+        if (prevState.soundEnabled) audioService.playAllMissionsComplete();
         newState.xp += 10; 
         newState.soulCoins += 2;
         newState = handleLevelUp(newState);
       } else {
-        audioService.playMissionComplete();
+        if (prevState.soundEnabled) audioService.playMissionComplete();
       }
 
       return newState;
@@ -222,6 +225,19 @@ export const useGameState = () => {
     }
   }, [playerState]);
 
+  const toggleSound = useCallback(() => {
+    setPlayerState(p => p ? { ...p, soundEnabled: !p.soundEnabled } : null);
+    if (playerState && !playerState.soundEnabled) {
+        // Play sound when enabling
+        audioService.playMissionComplete();
+    }
+  }, [playerState]);
+
+  const resetGame = useCallback(() => {
+    localStorage.removeItem('sagesPathGameState');
+    setPlayerState(null);
+  }, []);
+
   return {
     playerState,
     view,
@@ -237,5 +253,7 @@ export const useGameState = () => {
     addRecurringMission,
     deleteRecurringMission,
     toggleNotifications,
+    toggleSound,
+    resetGame,
   };
 };

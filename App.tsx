@@ -58,7 +58,8 @@ const AppContent: React.FC = () => {
         playerState, view, loadingMessage, showNewDayModal,
         startGame, importState, setView, completeMission, 
         startNewDay, confirmNewDay, saveJournalEntry,
-        addRecurringMission, deleteRecurringMission, toggleNotifications
+        addRecurringMission, deleteRecurringMission, toggleNotifications,
+        toggleSound, resetGame
     } = useGameState();
     const [activeBreathingExercise, setActiveBreathingExercise] = useState<string | null>(null);
     
@@ -135,7 +136,13 @@ const AppContent: React.FC = () => {
             case 'shop':
                 return <SoulShopPage />;
             case 'settings':
-                return <SettingsPage notificationsEnabled={playerState.notificationsEnabled} onToggleNotifications={handleToggleNotifications} />;
+                return <SettingsPage 
+                            notificationsEnabled={playerState.notificationsEnabled} 
+                            onToggleNotifications={handleToggleNotifications}
+                            soundEnabled={playerState.soundEnabled}
+                            onToggleSound={toggleSound}
+                            onResetGame={resetGame}
+                        />;
             default:
                 return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise}/>;
         }

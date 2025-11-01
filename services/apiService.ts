@@ -11,7 +11,7 @@ export const exportPlayerState = (playerState: PlayerState): void => {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'sages_path_progress.json';
+    link.download = 'sage_path_full_progress.json';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

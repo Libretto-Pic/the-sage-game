@@ -20,7 +20,7 @@ export interface PlayerStats {
   rp: number; // Resolve Points: consistency, long-term commitment.
 }
 
-export type MissionCategory = 'Health' | 'Wealth' | 'Mind';
+export type MissionCategory = 'Health' | 'Wealth' | 'Mind' | 'Soul';
 
 export interface Mission {
   id: string;

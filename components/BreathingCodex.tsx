@@ -1,5 +1,5 @@
 import React from 'react';
-import { BREATHING_STYLES } from '../constants';
+import { BREATHING_STYLES } from '../services/lore';
 import type { BreathingStyle as BreathingStyleType } from '../types';
 import BreathingExercisePlayer from './BreathingExercisePlayer';
 

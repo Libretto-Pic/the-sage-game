@@ -1,5 +1,6 @@
 import React from 'react';
 import type { View } from '../types';
+import { LEVEL_TITLES } from '../services/lore';
 
 interface SidebarProps {
   currentView: View;
@@ -35,6 +36,8 @@ const NavItem: React.FC<NavItemProps> = ({ label, view, icon, currentView, setVi
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, playerLevel, onExport, onImport }) => {
+  const levelTitle = LEVEL_TITLES[playerLevel] || '';
+
   const navItems: { label: string, view: View, icon: React.ReactNode }[] = [
     { label: 'Dashboard', view: 'dashboard', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
     { label: 'Missions', view: 'missions', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
@@ -57,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, playerLevel, on
     <div className="w-64 bg-slate-50 h-screen p-4 flex flex-col border-r border-slate-200">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-teal-600 font-serif">The Sage's Path</h1>
-        <p className="text-sm text-slate-500">Level {playerLevel}</p>
+        <p className="text-sm text-slate-500">Level {playerLevel}{levelTitle && `: ${levelTitle}`}</p>
       </div>
       <nav className="space-y-2 flex-grow">
         {navItems.map(item => (

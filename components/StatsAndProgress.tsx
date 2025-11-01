@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlayerState } from '../types';
-import { REALMS, XP_PER_LEVEL } from '../constants';
+import { REALMS, LEVEL_TITLES } from '../services/lore';
+import { XP_PER_LEVEL } from '../constants';
 
 const StatBar: React.FC<{ label: string; value: number; color: string; icon: React.ReactNode }> = ({ label, value, color, icon }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-4">
@@ -21,7 +22,15 @@ const StatBar: React.FC<{ label: string; value: number; color: string; icon: Rea
 
 const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState }) => {
     const { level, xp, stats, soulCoins } = playerState;
-    const currentRealm = REALMS.find(r => level >= parseInt(r.levelRange.split('-')[0].replace('Levels ', '')) && level <= parseInt(r.levelRange.split('-')[1])) || REALMS[0];
+    const currentRealm = REALMS.find(r => {
+        if (r.levelRange.includes('-')) {
+            const [start, end] = r.levelRange.replace('Levels ', '').split('-').map(Number);
+            return level >= start && level <= end;
+        }
+        return level === parseInt(r.levelRange.replace('Levels ', ''));
+    }) || REALMS[0];
+
+    const levelTitle = LEVEL_TITLES[level] || '';
     const progressPercentage = (xp / XP_PER_LEVEL) * 100;
 
     return (
@@ -42,7 +51,7 @@ const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState })
                 <div className="bg-white p-5 rounded-xl shadow-sm">
                     <p className="text-sm font-medium text-slate-500">CURRENT LEVEL</p>
                     <p className="text-5xl font-bold text-slate-800 mt-1">{level}</p>
-                    <p className="text-sm text-slate-400 mt-1">{currentRealm.name}</p>
+                    <p className="text-sm text-slate-400 mt-1 truncate" title={levelTitle}>{levelTitle}</p>
                 </div>
                  <div className="bg-white p-5 rounded-xl shadow-sm">
                     <p className="text-sm font-medium text-slate-500">SOUL COINS</p>

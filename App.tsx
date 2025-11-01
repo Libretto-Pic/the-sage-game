@@ -19,7 +19,7 @@ import AchievementsPage from './components/AchievementsPage';
 import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions';
 import { exportPlayerState, importPlayerState } from './services/apiService';
 import { audioService } from './services/audioService';
-import { BREATHING_STYLES } from './constants';
+import { BREATHING_STYLES } from './services/lore';
 import type { PlayerState } from './types';
 
 

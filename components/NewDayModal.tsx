@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface NewDayModalProps {
@@ -14,7 +13,7 @@ const NewDayModal: React.FC<NewDayModalProps> = ({ onConfirm }) => {
           The sun rises, Wanderer. The Fog of Modern Life recedes for a moment, granting clarity. Today is a new arena, a new opportunity to forge your will.
         </p>
         <p className="text-slate-600 mb-8">
-          Perform the Eternal Breath, and let us begin today's trials.
+          Perform a centering breath, and let us begin today's trials.
         </p>
         <button
           onClick={onConfirm}

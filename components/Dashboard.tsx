@@ -6,6 +6,7 @@ import StatSheet from './StatSheet';
 import UnlockedPowers from './UnlockedPowers';
 import ReflectionJournal from './ReflectionJournal';
 import EmergencyMissionCard from './EmergencyMissionCard';
+import { LEVEL_TITLES } from '../services/lore';
 
 interface DashboardProps {
     playerState: PlayerState;
@@ -14,10 +15,12 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry, onPracticeBreathing }) => {
+    const levelTitle = LEVEL_TITLES[playerState.level] || 'The Path Unfolds';
+
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-3xl font-bold font-serif text-slate-800">Day {playerState.day}: The Path Unfolds</h1>
+                <h1 className="text-3xl font-bold font-serif text-slate-800">Day {playerState.day}: {levelTitle}</h1>
                 <p className="mt-2 text-slate-600">The journey continues, Wanderer. What will you achieve today?</p>
             </div>
 

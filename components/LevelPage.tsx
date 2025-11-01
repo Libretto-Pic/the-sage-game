@@ -1,6 +1,7 @@
+
 // Implemented the LevelPage to display the player's journey through the different realms.
 import React from 'react';
-import { REALMS } from '../services/lore';
+import { REALMS } from '../services/lore.ts';
 
 interface LevelPageProps {
   playerLevel: number;

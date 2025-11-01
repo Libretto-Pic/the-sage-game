@@ -1,5 +1,6 @@
+
 import React from 'react';
-import ReflectionJournal from './ReflectionJournal';
+import ReflectionJournal from './ReflectionJournal.tsx';
 
 interface ReflectionJournalPageProps {
   saveJournalEntry: (entry: string) => void;

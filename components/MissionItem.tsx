@@ -1,6 +1,7 @@
+
 // Implemented the MissionItem component to display individual mission details and actions.
 import React from 'react';
-import type { Mission } from '../types';
+import type { Mission } from '../types.ts';
 
 interface MissionItemProps {
     mission: Mission;

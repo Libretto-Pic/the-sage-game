@@ -1,6 +1,7 @@
+
 // Implemented Gemini Service to dynamically generate missions for the player.
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Mission } from '../types';
+import type { Mission } from '../types.ts';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 

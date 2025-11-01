@@ -1,26 +1,27 @@
+
 import React, { useState } from 'react';
-import { useGameState } from './hooks/useGameState';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import DailyMissionsPage from './components/DailyMissionsPage';
-import StatsAndProgress from './components/StatsAndProgress';
-import LevelPage from './components/LevelPage';
-import BreathingCodex from './components/BreathingCodex';
-import ReflectionJournalPage from './components/ReflectionJournalPage';
-import RitualsPage from './components/RitualsPage';
-import BossBattlesPage from './components/BossBattlesPage';
-import SoulShopPage from './components/SoulShopPage';
-import SettingsPage from './components/SettingsPage';
-import LandingPage from './components/LandingPage';
-import LoadingScreen from './components/LoadingScreen';
-import NewDayModal from './components/NewDayModal';
-import BreathingExercisePlayer from './components/BreathingExercisePlayer';
-import AchievementsPage from './components/AchievementsPage';
-import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions';
-import { exportPlayerState, importPlayerState } from './services/apiService';
-import { audioService } from './services/audioService';
-import { BREATHING_STYLES } from './services/lore';
-import type { PlayerState } from './types';
+import { useGameState } from './hooks/useGameState.ts';
+import Sidebar from './components/Sidebar.tsx';
+import Dashboard from './components/Dashboard.tsx';
+import DailyMissionsPage from './components/DailyMissionsPage.tsx';
+import StatsAndProgress from './components/StatsAndProgress.tsx';
+import LevelPage from './components/LevelPage.tsx';
+import BreathingCodex from './components/BreathingCodex.tsx';
+import ReflectionJournalPage from './components/ReflectionJournalPage.tsx';
+import RitualsPage from './components/RitualsPage.tsx';
+import BossBattlesPage from './components/BossBattlesPage.tsx';
+import SoulShopPage from './components/SoulShopPage.tsx';
+import SettingsPage from './components/SettingsPage.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import LoadingScreen from './components/LoadingScreen.tsx';
+import NewDayModal from './components/NewDayModal.tsx';
+import BreathingExercisePlayer from './components/BreathingExercisePlayer.tsx';
+import AchievementsPage from './components/AchievementsPage.tsx';
+import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions.ts';
+import { exportPlayerState, importPlayerState } from './services/apiService.ts';
+import { audioService } from './services/audioService.ts';
+import { BREATHING_STYLES } from './services/lore.ts';
+import type { PlayerState } from './types.ts';
 
 
 // A simple Toast provider and hook to show notifications

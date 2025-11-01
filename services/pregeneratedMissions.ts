@@ -1,4 +1,5 @@
-import type { Mission } from '../types';
+
+import type { Mission } from '../types.ts';
 
 interface DailyWisdom {
     day: number;

@@ -20,8 +20,7 @@ const notificationService = {
   sendMissionReadyNotification: (missionCount: number): void => {
     if (notificationService.getPermissionStatus() === 'granted') {
       const title = "Your Daily Trials Await";
-      // FIX: The 'vibrate' property does not exist on the NotificationOptions type in this environment, causing a build error.
-      const options: NotificationOptions = {
+      const options = {
         body: `The Sage has prepared ${missionCount} new missions for you. Begin your journey for today!`,
         // You can add an icon URL here if you have one hosted
         // icon: '/sage-icon.png',

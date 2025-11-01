@@ -1,6 +1,6 @@
-// Implemented the Dashboard component to serve as the main landing view.
+
 import React from 'react';
-import type { PlayerState } from '../types.js';
+import { PlayerState } from '../types.js';
 import DailyMissions from './DailyMissions.js';
 import StatSheet from './StatSheet.js';
 import UnlockedPowers from './UnlockedPowers.js';

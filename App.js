@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGameState } from './hooks/useGameState.js';
 import Sidebar from './components/Sidebar.js';
@@ -20,7 +21,7 @@ import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions.js';
 import { exportPlayerState, importPlayerState } from './services/apiService.js';
 import { audioService } from './services/audioService.js';
 import { BREATHING_STYLES } from './services/lore.js';
-import type { PlayerState } from './types.js';
+import { PlayerState } from './types.js';
 
 
 // A simple Toast provider and hook to show notifications
@@ -66,8 +67,6 @@ const AppContent = () => {
     
     const showToast = useToast();
 
-    // Moved this hook to the top of the component to obey the Rules of Hooks.
-    // It must be called unconditionally on every render.
     React.useEffect(() => {
         const init = () => {
             audioService.init();

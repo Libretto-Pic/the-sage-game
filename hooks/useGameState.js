@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { PlayerState, View, Mission, RecurringMission, Achievement } from '../types.js';
+import { PlayerState, View, Mission, RecurringMission, Achievement } from '../types.js';
 import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants.js';
 import { generateNewMissions } from '../services/geminiService.js';
 import { audioService } from '../services/audioService.js';
@@ -30,7 +31,6 @@ const getInitialState = (): PlayerState | null => {
     const savedState = localStorage.getItem('sagesPathGameState');
     if (savedState) {
       const parsedState = JSON.parse(savedState);
-      // Basic validation and migration for older save files
       if (parsedState.level && parsedState.stats) {
         return { ...initialPlayerState, ...parsedState };
       }
@@ -119,10 +119,9 @@ export const useGameState = () => {
     while (newXp >= XP_PER_LEVEL) {
       newXp -= XP_PER_LEVEL;
       newLevel += 1;
-      newSoulCoins += 5; // Grant 5 Soul Coins per level up
+      newSoulCoins += 5;
     }
 
-    // Restore stats on level up
     const newStats = { hp: 100, mp: 100, sp: 100, rp: 100 };
 
     return { ...currentState, level: newLevel, xp: newXp, soulCoins: newSoulCoins, stats: newStats };
@@ -346,7 +345,6 @@ export const useGameState = () => {
   const toggleSound = useCallback(() => {
     setPlayerState(p => p ? { ...p, soundEnabled: !p.soundEnabled } : null);
     if (playerState && !playerState.soundEnabled) {
-        // Play sound when enabling
         audioService.playMissionComplete();
     }
   }, [playerState]);

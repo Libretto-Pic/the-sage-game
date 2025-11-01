@@ -1,6 +1,6 @@
-// Implemented Gemini Service to dynamically generate missions for the player.
+
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Mission } from '../types.js';
+import { Mission } from '../types.js';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -95,7 +95,6 @@ export const generateNewMissions = async (level: number, existingMissionTitles: 
 
     } catch (error) {
         console.error("Error generating missions with Gemini API:", error);
-        // Fallback for only the requested categories
         const fallbackMissions: Omit<Mission, 'id' | 'isCompleted' | 'xp'>[] = [];
         if (categories.includes('Health')) fallbackMissions.push({ title: 'Walk for 15 Minutes', description: 'Step outside and get your body moving.', category: 'Health', difficulty: 'Easy' });
         if (categories.includes('Wealth')) fallbackMissions.push({ title: 'Read One Industry Article', description: 'Stay updated with trends in your field.', category: 'Wealth', difficulty: 'Easy' });

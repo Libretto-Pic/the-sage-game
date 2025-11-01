@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export type View =
@@ -14,10 +15,10 @@ export type View =
   | 'achievements';
 
 export interface PlayerStats {
-  hp: number; // Health Points: resilience, physical well-being.
-  mp: number; // Mana Points: mental energy, focus, creativity.
-  sp: number; // Spirit Points: willpower, discipline, emotional regulation.
-  rp: number; // Resolve Points: consistency, long-term commitment.
+  hp: number;
+  mp: number;
+  sp: number;
+  rp: number;
 }
 
 export type MissionCategory = 'Health' | 'Wealth' | 'Mind' | 'Soul';
@@ -38,7 +39,7 @@ export interface RecurringMission {
     description: string;
     category: MissionCategory;
     frequencyType: 'daily' | 'every_x_days';
-    frequencyValue: number; // 1 for daily, >1 for every_x_days
+    frequencyValue: number;
     startDay: number;
     xp: number;
 }
@@ -57,21 +58,21 @@ export interface PlayerState {
   notificationsEnabled: boolean;
   soundEnabled: boolean;
   unlockedAchievements: string[];
-  readingProgress: number; // 0, 1, or 2 for 30, 60, 90 mins
+  readingProgress: number;
 }
 
 export interface Achievement {
     id: string;
     name: string;
     description: string;
-    icon: React.FC<{className?: string}>;
+    icon: (props: { className?: string }) => React.ReactElement | null;
 }
 
 export interface BreathingStyle {
     name: string;
     description: string;
     unlockLevel: number;
-    icon: React.FC<{className?: string}>;
+    icon: (props: { className?: string }) => React.ReactElement | null;
     technique: string;
     whenToUse: string;
     structuredTechnique?: {

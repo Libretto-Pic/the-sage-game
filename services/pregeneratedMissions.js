@@ -1,4 +1,5 @@
-import type { Mission } from '../types.js';
+
+import { Mission } from '../types.js';
 
 interface DailyWisdom {
     day: number;
@@ -11,7 +12,6 @@ interface DailyWisdom {
 }
 
 export const PREGENERATED_JOURNEY: DailyWisdom[] = [
-    // Day 1-10: Realm of Awakening (Level 30-39), 25 XP
     {
         day: 1, title: 'LEVEL 30: The First Door', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'Neru, the Whispering Temptation of procrastination.',
         missions: [

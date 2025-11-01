@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 const ReflectionJournal = ({ saveJournalEntry }: { saveJournalEntry: (entry: string) => void }) => {
@@ -8,7 +9,7 @@ const ReflectionJournal = ({ saveJournalEntry }: { saveJournalEntry: (entry: str
         if (entry.trim()) {
             saveJournalEntry(entry);
             setIsSaved(true);
-            setTimeout(() => setIsSaved(false), 2000); // Reset after 2s
+            setTimeout(() => setIsSaved(false), 2000);
         }
     };
 

@@ -1,6 +1,6 @@
-// Implemented the MissionItem component to display individual mission details and actions.
+
 import React from 'react';
-import type { Mission, MissionCategory } from '../types.js';
+import { Mission } from '../types.js';
 
 interface MissionItemProps {
     mission: Mission;
@@ -8,7 +8,7 @@ interface MissionItemProps {
     isCompletable: boolean;
 }
 
-const MissionCategoryIcon = ({ category }: { category: MissionCategory }) => {
+const MissionCategoryIcon = ({ category }: { category: Mission['category'] }) => {
     const styles = {
         Health: { bg: 'bg-red-100', text: 'text-red-600', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg> },
         Wealth: { bg: 'bg-green-100', text: 'text-green-600', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg> },

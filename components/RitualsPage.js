@@ -1,6 +1,6 @@
-// Implemented the RitualsPage for managing recurring missions.
+
 import React, { useState } from 'react';
-import type { RecurringMission } from '../types.js';
+import { RecurringMission } from '../types.js';
 import { MISSION_CATEGORIES } from '../constants.js';
 
 interface RitualsPageProps {
@@ -35,12 +35,10 @@ const RitualsPage = ({ recurringMissions, addRecurringMission, deleteRecurringMi
     const handleXPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = parseInt(e.target.value, 10);
         if (isNaN(value)) value = 5;
-        // Clamp the value while typing
         if (value < 5) value = 5;
         if (value > 15) value = 15;
         setFormState(prevState => ({ ...prevState, xp: value }));
     };
-
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,7 +78,6 @@ const RitualsPage = ({ recurringMissions, addRecurringMission, deleteRecurringMi
                 </div>
             </div>
 
-            {/* Form to add new ritual */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 className="text-xl font-bold text-slate-800 mb-4">Carve a New Ritual</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,7 +125,6 @@ const RitualsPage = ({ recurringMissions, addRecurringMission, deleteRecurringMi
                 </form>
             </div>
             
-            {/* List of existing rituals */}
             <div className="space-y-4">
                 <h3 className="text-xl font-bold text-slate-800">Active Rituals</h3>
                 {recurringMissions && recurringMissions.length > 0 ? (

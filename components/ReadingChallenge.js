@@ -1,7 +1,8 @@
+
 import React from 'react';
 
 interface ReadingChallengeProps {
-    progress: number; // 0, 1, 2, or 3
+    progress: number;
     onComplete: () => void;
 }
 

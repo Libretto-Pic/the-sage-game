@@ -1,4 +1,4 @@
-// Created the LandingPage component, which serves as the entry point for new users. It provides an introduction to the application and a button to start the game, triggering the initial state setup.
+
 import React from 'react';
 
 interface LandingPageProps {

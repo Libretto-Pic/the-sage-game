@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { ALL_ACHIEVEMENTS } from '../services/achievements.js';
-import type { Achievement } from '../types.js';
+import { Achievement } from '../types.js';
 
 interface AchievementsPageProps {
   unlockedAchievements: string[];

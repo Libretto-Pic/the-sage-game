@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import type { BreathingStyle } from '../types.js';
+import { BreathingStyle } from '../types.js';
 
 interface BreathingExercisePlayerProps {
   exercise: BreathingStyle;
@@ -17,7 +18,6 @@ const BreathingExercisePlayer = ({ exercise, onClose }: BreathingExercisePlayerP
   const [currentRep, setCurrentRep] = useState(1);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Initial countdown effect
   useEffect(() => {
     if (phase === 'starting') {
       if (countdown > 0) {
@@ -30,7 +30,6 @@ const BreathingExercisePlayer = ({ exercise, onClose }: BreathingExercisePlayerP
     }
   }, [phase, countdown, structuredTechnique]);
 
-  // Main exercise timer effect
   useEffect(() => {
     if (phase !== 'running' || !structuredTechnique) return;
 
@@ -40,22 +39,18 @@ const BreathingExercisePlayer = ({ exercise, onClose }: BreathingExercisePlayerP
           return prevTime - 1;
         }
 
-        // Time for next step
         const nextStepIndex = currentStepIndex + 1;
         
         if (nextStepIndex < structuredTechnique.steps.length) {
-          // Same rep, next step
           setCurrentStepIndex(nextStepIndex);
           return structuredTechnique.steps[nextStepIndex].duration;
         } else {
-          // Next rep
           const nextRep = currentRep + 1;
           if (nextRep <= structuredTechnique.reps) {
             setCurrentRep(nextRep);
             setCurrentStepIndex(0);
             return structuredTechnique.steps[0].duration;
           } else {
-            // Finished
             setPhase('finished');
             return 0;
           }
@@ -76,7 +71,7 @@ const BreathingExercisePlayer = ({ exercise, onClose }: BreathingExercisePlayerP
     switch(currentStep.type) {
         case 'Inhale': return 'scale-125';
         case 'Exhale': return 'scale-75';
-        case 'Hold': return 'scale-125'; // Stay expanded after inhale
+        case 'Hold': return 'scale-125';
         default: return 'scale-100';
     }
   }

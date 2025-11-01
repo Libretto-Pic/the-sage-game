@@ -1,5 +1,6 @@
+
 import React from 'react';
-import type { Mission, DailySummary } from '../types.js';
+import { Mission, DailySummary } from '../types.js';
 import DailyMissions from './DailyMissions.js';
 import ReadingChallenge from './ReadingChallenge.js';
 

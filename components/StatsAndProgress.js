@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PlayerState } from '../types.js';
 import { REALMS, LEVEL_TITLES } from '../services/lore.js';
@@ -35,7 +36,6 @@ const StatsAndProgress = ({playerState}: {playerState: PlayerState}) => {
 
     return (
         <div className="space-y-6">
-            {/* Realm Banner */}
             <div className="relative p-8 rounded-xl text-white overflow-hidden" style={{
                 backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1545224329-87c22649b3a3?q=80&w=1000&auto=format&fit=crop)`,
                 backgroundSize: 'cover',
@@ -46,7 +46,6 @@ const StatsAndProgress = ({playerState}: {playerState: PlayerState}) => {
                 <p className="mt-2 text-slate-200 max-w-lg">{currentRealm.theme}</p>
             </div>
             
-            {/* Progression Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white p-5 rounded-xl shadow-sm">
                     <p className="text-sm font-medium text-slate-500">CURRENT LEVEL</p>
@@ -76,7 +75,6 @@ const StatsAndProgress = ({playerState}: {playerState: PlayerState}) => {
                 </div>
             </div>
 
-            {/* Character Stats */}
             <div>
                  <h3 className="text-2xl font-bold font-serif text-slate-800 mb-4">Character Stats</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

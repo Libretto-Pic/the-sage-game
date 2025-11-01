@@ -1,8 +1,8 @@
-import React from 'react';
-import type { BreathingStyle } from '../types.js';
 
-//============== ICONS ==============//
-const IronLungIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V6a2 2 0 012-2h2.586a1 1 0 01.707.293l1.414 1.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l1.414-1.414a1 1 0 01.707-.293H20a2 2 0 012 2v2a2 2 0 01-2 2h-1.586a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 006.586 10H5a2 2 0 01-2-2z" }), React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 14s.5-1 2-1 2.5 2 5 2 5-2 5-2 1.5 1 2 1" }));
+import React from 'react';
+import { BreathingStyle } from '../types.js';
+
+const IronLungIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V6a2 2 0 012-2h2.586a1 1 0 01.707.293l1.414 1.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l1.414-1.414a1 1 0 01.707-.293H20a2 2 0 012 2v2a2 2 0 01-2 2h-1.586a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-.707-.293h-3.172a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 006.586 10H5a2 2 0 01-2-2z" }), React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 14s.5-1 2-1 2.5 2 5 2 5-2 5-2 1.5 1 2 1" }));
 const EmberIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.657 7.343A8 8 0 0117.657 18.657z" }));
 const WaterFlowIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 9l4-4 4 4m0 6l-4 4-4-4" }));
 const ThunderPulseIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M13 10V3L4 14h7v7l9-11h-7z" }));
@@ -12,7 +12,6 @@ const SoulResonanceIcon = ({ className }: {className?: string}) => React.createE
 const InfiniteIcon = ({ className }: {className?: string}) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h6.172a2 2 0 001.414-.586l.828-.828A2 2 0 0117 4h0z" }));
 
 
-//============== LEVEL TITLES ==============//
 export const LEVEL_TITLES: { [key: number]: string } = {
   30: "The First Door", 31: "The Mirror Path", 32: "The Whispering Mind", 33: "The Discipline Forge", 34: "The Hunger Game", 35: "The Noise and the Stillness", 36: "The Shadow Duel", 37: "The Iron Morning", 38: "The Invisible War", 39: "The Path of Solitude",
   40: "The Mindsmith", 41: "The Fire Trial", 42: "The Chainbreaker", 43: "The Inner Child's Cry", 44: "The Thousand Distractions", 45: "The Storm Within", 46: "The Dream Architect", 47: "The Wall of Resistance", 48: "The Breath of Focus", 49: "The Broken Sword",
@@ -24,20 +23,17 @@ export const LEVEL_TITLES: { [key: number]: string } = {
   100: "The Beyond"
 };
 
-//============== BREATHING STYLES ==============//
 export const BREATHING_STYLES: BreathingStyle[] = [
     { name: 'Iron Lung Breathing', unlockLevel: 30, icon: IronLungIcon, description: 'Reclaim control over body and mind.', technique: 'A steady, rhythmic inhale-exhale to sharpen focus & kill procrastination.', whenToUse: 'During moments of distraction or low energy.', structuredTechnique: { reps: 15, steps: [{ type: 'Inhale', duration: 4 }, { type: 'Exhale', duration: 6 }] } },
     { name: 'Ember Breathing', unlockLevel: 40, icon: EmberIcon, description: 'Inner Fire. Discipline becomes weapon.', technique: 'Deep diaphragmatic breath; visualize burning weakness away.', whenToUse: 'When facing fear, shame, or self-hate.', structuredTechnique: { reps: 12, steps: [{ type: 'Inhale', duration: 6 }, { type: 'Hold', duration: 2 }, { type: 'Exhale', duration: 8 }] } },
     { name: 'Water Flow Breathing', unlockLevel: 50, icon: WaterFlowIcon, description: 'Mastery of motion. Balance & rhythm.', technique: 'Inhale in 4 parts, exhale in 4; used for mental clarity & adaptability.', whenToUse: 'When feeling restless, rushed, or burnt out.', structuredTechnique: { reps: 10, steps: [{ type: 'Inhale', duration: 4 }, { type: 'Hold', duration: 1 }, { type: 'Exhale', duration: 4 }, { type: 'Hold', duration: 1 }] } },
-    { name: 'Thunder Pulse Breathing', unlockLevel: 60, icon: ThunderPulseIcon, description: 'Power & awareness. Missions unlock.', technique: 'Short, explosive bursts; increase focus speed.', whenToUse: 'When desire, impulse, or emotional chaos invades your focus.', structuredTechnique: { reps: 3, steps: [{ type: 'Inhale', duration: 1 }, { type: 'Exhale', duration: 1 }] } }, // Note: This is a simplified representation of rapid breathing.
+    { name: 'Thunder Pulse Breathing', unlockLevel: 60, icon: ThunderPulseIcon, description: 'Power & awareness. Missions unlock.', technique: 'Short, explosive bursts; increase focus speed.', whenToUse: 'When desire, impulse, or emotional chaos invades your focus.', structuredTechnique: { reps: 3, steps: [{ type: 'Inhale', duration: 1 }, { type: 'Exhale', duration: 1 }] } },
     { name: 'Mountain Heart Breathing', unlockLevel: 70, icon: MountainHeartIcon, description: 'Transcendence through pain.', technique: 'Long, slow breaths synced with heartbeat.', whenToUse: 'When facing isolation, false pride, or emotional numbness.', structuredTechnique: { reps: 10, steps: [{ type: 'Inhale', duration: 8 }, { type: 'Exhale', duration: 8 }] } },
     { name: 'Void Breathing', unlockLevel: 80, icon: VoidIcon, description: 'Cosmic awareness. Integration of self.', technique: 'Breath so slow it disappears; observing thought as wind.', whenToUse: 'When facing spiritual arrogance, nihilism, or disconnection.', structuredTechnique: { reps: 8, steps: [{ type: 'Inhale', duration: 10 }, { type: 'Exhale', duration: 15 }] } },
     { name: 'Soul Resonance Breathing', unlockLevel: 90, icon: SoulResonanceIcon, description: 'Awakening. Facing all shadows at once.', technique: 'Harmonize breath + intention + inner voice.', whenToUse: 'When facing your deepest, fused shadows.', structuredTechnique: { reps: 7, steps: [{ type: 'Inhale', duration: 7 }, { type: 'Hold', duration: 2 }, { type: 'Exhale', duration: 7 }] } },
     { name: 'Infinite Breath', unlockLevel: 100, icon: InfiniteIcon, description: 'Enlightenment. No control needed.', technique: 'No inhale, no exhale, just awareness. The state of being, not doing.', whenToUse: 'This is not a technique to be used, but a state to be realized.' },
 ];
 
-
-//============== REALMS ==============//
 export const REALMS = [
   { levelRange: 'Levels 30-39', name: 'Realm I - The Mortal Breath', theme: 'Discipline. Reclaiming control over body and mind.', breathingStyle: 'Iron Lung Breathing', enemies: 'Laziness, Overthinking, Lust, Distraction, Doubt', eliteDemon: 'Neru, the Whispering Temptation - feeds on wasted time.', boss: 'The Shadow of Comfort - appears as your past self.' },
   { levelRange: 'Levels 40-49', name: 'Realm II - The Forging Flame', theme: 'Inner Fire. Discipline becomes weapon.', breathingStyle: 'Ember Breathing', enemies: 'Fear, Shame, Comparison, Regret, Self-Hate', eliteDemon: 'Rael, the Mirror Keeper - traps you in endless self-judgment.', boss: 'The Fire Trial - endurance of mind & flesh.' },

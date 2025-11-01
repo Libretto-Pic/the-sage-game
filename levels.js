@@ -1,4 +1,4 @@
-// Implemented level descriptions to provide lore and context to the player's progression.
+
 export interface LevelInfo {
     level: number;
     title: string;

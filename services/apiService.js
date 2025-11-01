@@ -1,9 +1,6 @@
-import type { PlayerState } from '../types.js';
 
-/**
- * Serializes the player state to a JSON file and triggers a download.
- * @param playerState The current player state object.
- */
+import { PlayerState } from '../types.js';
+
 export const exportPlayerState = (playerState: PlayerState): void => {
   try {
     const dataStr = JSON.stringify(playerState, null, 2);
@@ -22,10 +19,6 @@ export const exportPlayerState = (playerState: PlayerState): void => {
   }
 };
 
-/**
- * Opens a file picker for the user to select a JSON file, then parses it into a PlayerState object.
- * @returns A promise that resolves to the imported PlayerState or null if the process is cancelled or fails.
- */
 export const importPlayerState = (showToast: (message: string, type: 'success' | 'error') => void): Promise<PlayerState | null> => {
   return new Promise((resolve) => {
     const input = document.createElement('input');
@@ -45,7 +38,6 @@ export const importPlayerState = (showToast: (message: string, type: 'success' |
           const result = event.target?.result;
           if (typeof result === 'string') {
             const parsedState: PlayerState = JSON.parse(result);
-            // Basic validation to ensure it's a valid state file
             if (parsedState && typeof parsedState.level === 'number' && Array.isArray(parsedState.missions)) {
               showToast("Progress successfully imported!", 'success');
               resolve(parsedState);

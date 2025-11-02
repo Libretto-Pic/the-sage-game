@@ -11,7 +11,9 @@ export type View =
   | 'bosses'
   | 'shop'
   | 'settings'
-  | 'achievements';
+  | 'achievements'
+  | 'abilities'
+  | 'abilityDetail';
 
 export interface PlayerStats {
   hp: number; // Health Points: resilience, physical well-being.
@@ -21,6 +23,8 @@ export interface PlayerStats {
 }
 
 export type MissionCategory = 'Health' | 'Wealth' | 'Mind' | 'Soul';
+export type StatCategory = 'Physique' | 'Intellect' | 'Memory' | MissionCategory;
+
 
 export interface Mission {
   id: string;
@@ -31,6 +35,10 @@ export interface Mission {
   xp: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard';
   isBossMission?: boolean;
+  isActivationMission?: boolean;
+  activationId?: string;
+  powerPointsReward?: number;
+  isTrialMission?: boolean;
 }
 
 export interface RecurringMission {
@@ -42,6 +50,13 @@ export interface RecurringMission {
     frequencyValue: number; // 1 for daily, >1 for every_x_days
     startDay: number;
     xp: number;
+}
+
+export interface ActivationTrial {
+    id: string;
+    shopItemId: StatCategory;
+    statBonus: number;
+    missionId: string;
 }
 
 export interface PlayerState {
@@ -65,6 +80,16 @@ export interface PlayerState {
   consecutiveDaysFailed: number;
   onDemandMissionsGeneratedToday: number;
   boostedKazuki: Record<string, number>; // { [kazukiName]: boostedPower }
+  lastSessionTimestamp: number;
+  permanentStats: Partial<Record<StatCategory, number>>;
+  pendingActivations: ActivationTrial[];
+  kazukiPowerLevels: Record<string, number>; // { [kazukiName]: rolledPower }
+
+  // Generic Ability Progression
+  abilityLevels: Partial<Record<StatCategory, number>>;
+  abilityXp: Partial<Record<StatCategory, number>>;
+  testsAwaiting: Partial<Record<StatCategory, boolean>>;
+  currentTests: Partial<Record<StatCategory, { question: string; isSubmitted: boolean }>>;
 }
 
 export interface Achievement {
@@ -96,7 +121,7 @@ export interface Kazuki {
     controlReward: string;
     strengths: string[];
     weaknesses: string[];
-    powerPoints: number;
+    powerPointsRange: [number, number];
     origin: string; // e.g., Persian
     domain: string; // e.g., Distraction, fragmented focus
 }
@@ -107,4 +132,34 @@ export interface DailySummary {
     xpPerMission: number;
     breathStyle: string;
     kazukiWatch: string;
+}
+
+export interface ShopItem {
+    id: StatCategory;
+    name: string;
+    description: string;
+    costPerPoint: number;
+    icon: React.FC<{className?: string}>;
+    promptSuggestion: string;
+}
+
+export interface SkillDefinition {
+    name: string;
+    description: string;
+}
+
+export interface AbilityLevelContent {
+    level: number;
+    title: string;
+    description: string;
+    skills: SkillDefinition[];
+}
+
+export interface AbilityLore {
+    id: StatCategory;
+    name: string;
+    description: string;
+    icon: React.FC<{className?: string}>;
+    levels: AbilityLevelContent[];
+    xpPerLevel: number;
 }

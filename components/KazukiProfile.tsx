@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Kazuki } from '../types.ts';
 
 const StrengthIcon = () => (
@@ -18,12 +18,27 @@ interface KazukiProfileProps {
     playerPowerPoints: number;
     isControlled: boolean;
     boostedPower?: number;
+    powerLevel: number;
+    onControl: (kazukiName: string) => Promise<{success: boolean, reason?: string}>;
+    showToast: (message: string, type: 'success' | 'error') => void;
 }
 
-const KazukiProfile: React.FC<KazukiProfileProps> = ({ kazuki, playerPowerPoints, isControlled, boostedPower }) => {
-    const currentPower = boostedPower || kazuki.powerPoints;
+const KazukiProfile: React.FC<KazukiProfileProps> = ({ kazuki, playerPowerPoints, isControlled, boostedPower, powerLevel, onControl, showToast }) => {
+    const [isControlling, setIsControlling] = useState(false);
+    const currentPower = boostedPower || powerLevel;
     const powerRatio = Math.min((playerPowerPoints / currentPower) * 100, 100);
     const canControl = playerPowerPoints >= currentPower;
+
+    const handleControl = async () => {
+        setIsControlling(true);
+        const result = await onControl(kazuki.name);
+        if (result.success) {
+            showToast(`${kazuki.name} has been controlled! Your resolve deepens.`, 'success');
+        } else {
+            showToast(result.reason || `Failed to control ${kazuki.name}.`, 'error');
+        }
+        setIsControlling(false);
+    }
 
     if (isControlled) {
         return (
@@ -87,10 +102,17 @@ const KazukiProfile: React.FC<KazukiProfileProps> = ({ kazuki, playerPowerPoints
                     <span className="text-teal-600">Your Power: {playerPowerPoints}</span>
                     <span className="text-red-600">{kazuki.name}'s Power: {currentPower}</span>
                 </div>
+                
                 {canControl ? (
-                     <p className="text-center text-sm font-semibold text-green-600 mt-2">You have the strength to face {kazuki.name}. Seek out its trial in your missions!</p>
+                     <button 
+                        onClick={handleControl}
+                        disabled={isControlling}
+                        className="w-full mt-4 bg-teal-500 text-white font-bold py-3 px-4 rounded-md transition-all duration-200 enabled:hover:bg-teal-600 disabled:bg-slate-400"
+                    >
+                       {isControlling ? 'Controlling...' : `Attempt Control (${currentPower} PP)`}
+                    </button>
                 ) : (
-                    <p className="text-center text-sm text-slate-500 mt-2">Gather more power to overcome the temptation.</p>
+                    <p className="text-center text-sm text-slate-500 mt-2">Complete trials to gather enough power to overcome this demon.</p>
                 )}
             </div>
 

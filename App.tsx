@@ -16,11 +16,13 @@ import LoadingScreen from './components/LoadingScreen.tsx';
 import NewDayModal from './components/NewDayModal.tsx';
 import BreathingExercisePlayer from './components/BreathingExercisePlayer.tsx';
 import AchievementsPage from './components/AchievementsPage.tsx';
+import AbilitiesPage from './components/AbilitiesPage.tsx';
+import AbilityDetailPage from './components/AbilityDetailPage.tsx';
 import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions.ts';
 import { exportPlayerState, importPlayerState } from './services/apiService.ts';
 import { audioService } from './services/audioService.ts';
 import { BREATHING_STYLES } from './services/lore.ts';
-import type { PlayerState, MissionCategory } from './types.ts';
+import type { PlayerState, MissionCategory, StatCategory } from './types.ts';
 
 
 // A simple Toast provider and hook to show notifications
@@ -56,18 +58,17 @@ export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children 
 
 const AppContent: React.FC = () => {
     const { 
-        playerState, view, loadingMessage, showNewDayModal, newlyUnlocked, isGeneratingMission,
+        playerState, view, loadingMessage, showNewDayModal, newlyUnlocked, isGeneratingMission, activeAbility,
         startGame, importState, setView, completeMission, completeReadingBlock,
         startNewDay, confirmNewDay, saveJournalEntry,
         addRecurringMission, deleteRecurringMission, toggleNotifications,
-        toggleSound, resetGame, clearNewlyUnlocked, generateMissionByCategory
+        toggleSound, resetGame, clearNewlyUnlocked, generateMissionByCategory,
+        purchaseStatBoost, startAbilityTest, submitAbilityTestAnswer, controlKazuki, selectAbility
     } = useGameState();
     const [activeBreathingExercise, setActiveBreathingExercise] = useState<string | null>(null);
     
     const showToast = useToast();
 
-    // Moved this hook to the top of the component to obey the Rules of Hooks.
-    // It must be called unconditionally on every render.
     React.useEffect(() => {
         const init = () => {
             audioService.init();
@@ -166,9 +167,22 @@ const AppContent: React.FC = () => {
             case 'achievements':
                 return <AchievementsPage unlockedAchievements={playerState.unlockedAchievements} />;
             case 'bosses':
-                return <BossBattlesPage playerState={playerState} />;
+                return <BossBattlesPage playerState={playerState} onControlKazuki={controlKazuki} showToast={showToast} />;
             case 'shop':
-                return <SoulShopPage />;
+                return <SoulShopPage playerState={playerState} onPurchase={purchaseStatBoost} showToast={showToast} />;
+            case 'abilities':
+                return <AbilitiesPage 
+                            playerState={playerState} 
+                            onSelectAbility={selectAbility}
+                        />;
+            case 'abilityDetail':
+                return <AbilityDetailPage
+                            abilityId={activeAbility}
+                            playerState={playerState}
+                            onBack={() => setView('abilities')}
+                            onStartTest={startAbilityTest}
+                            onSubmitAnswer={submitAbilityTestAnswer}
+                        />;
             case 'settings':
                 return <SettingsPage 
                             notificationsEnabled={playerState.notificationsEnabled} 

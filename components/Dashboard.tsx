@@ -8,6 +8,7 @@ import ReflectionJournal from './ReflectionJournal.tsx';
 import EmergencyMissionCard from './EmergencyMissionCard.tsx';
 import ReadingChallenge from './ReadingChallenge.tsx';
 import PowerPointsTracker from './PowerPointsTracker.tsx';
+import SageGuidanceCard from './SageGuidanceCard.tsx';
 import { LEVEL_TITLES } from '../services/lore.ts';
 
 interface DashboardProps {
@@ -29,6 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry, on
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
+                    {playerState.day <= 3 && <SageGuidanceCard />}
                     <ReadingChallenge progress={playerState.readingProgress} onComplete={completeReadingBlock} />
                     <DailyMissions missions={playerState.missions} onCompleteMission={() => {}} isPreview />
                     <StatSheet stats={playerState.stats} />

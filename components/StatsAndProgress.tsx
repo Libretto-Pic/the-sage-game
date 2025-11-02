@@ -21,7 +21,7 @@ const StatBar: React.FC<{ label: string; value: number; color: string; icon: Rea
 );
 
 const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState }) => {
-    const { level, xp, stats, soulCoins } = playerState;
+    const { level, xp, stats, soulCoins, permanentStats } = playerState;
     const currentRealm = REALMS.find(r => {
         if (r.levelRange.includes('-')) {
             const [start, end] = r.levelRange.replace('Levels ', '').split('-').map(Number);
@@ -32,9 +32,10 @@ const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState })
 
     const levelTitle = LEVEL_TITLES[level] || '';
     const progressPercentage = (xp / XP_PER_LEVEL) * 100;
+    const hasPermanentStats = permanentStats && Object.keys(permanentStats).length > 0;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Realm Banner */}
             <div className="relative p-8 rounded-xl text-white overflow-hidden" style={{
                 backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1545224329-87c22649b3a3?q=80&w=1000&auto=format&fit=crop)`,
@@ -78,7 +79,7 @@ const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState })
 
             {/* Character Stats */}
             <div>
-                 <h3 className="text-2xl font-bold font-serif text-slate-800 mb-4">Character Stats</h3>
+                 <h3 className="text-2xl font-bold font-serif text-slate-800 mb-4">Character Stats (This Cycle)</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <StatBar 
                         label="HP" 
@@ -106,6 +107,21 @@ const StatsAndProgress: React.FC<{playerState: PlayerState}> = ({ playerState })
                     />
                  </div>
             </div>
+
+            {/* Permanent Stats */}
+            {hasPermanentStats && (
+                <div>
+                    <h3 className="text-2xl font-bold font-serif text-slate-800 mb-4">Permanent Bonuses</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(permanentStats).map(([stat, value]) => (
+                            <div key={stat} className="bg-white p-4 rounded-xl shadow-sm text-center border-t-4 border-yellow-400">
+                                <p className="text-sm font-semibold text-slate-600">{stat}</p>
+                                <p className="text-3xl font-bold text-yellow-600 mt-1">+{value}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

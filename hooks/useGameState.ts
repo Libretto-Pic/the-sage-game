@@ -1,13 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { PlayerState, View, Mission, RecurringMission, Achievement, MissionCategory } from '../types.ts';
+import type { PlayerState, View, Mission, RecurringMission, Achievement, MissionCategory, ActivationTrial, StatCategory, Kazuki } from '../types.ts';
 import { XP_PER_LEVEL, MISSION_CATEGORIES } from '../constants.ts';
-import { generateNewMissions, generateSingleMission } from '../services/geminiService.ts';
+import { 
+    generateNewMissions, 
+    generateSingleMission, 
+    generateActivationMission,
+    generateAbilityTestQuestion,
+    evaluateAbilityTestAnswer,
+    generateKazukiTrialMission,
+} from '../services/geminiService.ts';
 import { audioService } from '../services/audioService.ts';
 import { notificationService } from '../services/notificationService.ts';
 import { PREGENERATED_JOURNEY } from '../services/pregeneratedMissions.ts';
 import { ALL_ACHIEVEMENTS, ACHIEVEMENT_CONDITIONS } from '../services/achievements.ts';
 import { ALL_KAZUKI } from '../services/kazukiLore.ts';
+import { ALL_ABILITIES } from '../services/abilitiesLore.ts';
 
 const initialPlayerState: PlayerState = {
   level: 30,
@@ -30,16 +38,74 @@ const initialPlayerState: PlayerState = {
   consecutiveDaysFailed: 0,
   onDemandMissionsGeneratedToday: 0,
   boostedKazuki: {},
+  lastSessionTimestamp: Date.now(),
+  permanentStats: {},
+  pendingActivations: [],
+  kazukiPowerLevels: {},
+  abilityLevels: { Intellect: 1, Physique: 1, Memory: 1 },
+  abilityXp: { Intellect: 0, Physique: 0, Memory: 0 },
+  testsAwaiting: {},
+  currentTests: {},
 };
+
+// Helper to roll random power for Kazuki
+const initializeKazukiPowers = (currentPowers: Record<string, number>): Record<string, number> => {
+    const newPowers = { ...currentPowers };
+    let updated = false;
+    for (const kazuki of ALL_KAZUKI) {
+        if (!newPowers[kazuki.name]) {
+            const [min, max] = kazuki.powerPointsRange;
+            newPowers[kazuki.name] = Math.floor(Math.random() * (max - min + 1)) + min;
+            updated = true;
+        }
+    }
+    return updated ? newPowers : currentPowers;
+};
+
 
 const getInitialState = (): PlayerState | null => {
   try {
     const savedState = localStorage.getItem('sagesPathGameState');
     if (savedState) {
-      const parsedState = JSON.parse(savedState);
+      let parsedState = JSON.parse(savedState);
       // Basic validation and migration for older save files
       if (parsedState.level && parsedState.stats) {
-        return { ...initialPlayerState, ...parsedState };
+        let migratedState = { ...initialPlayerState, ...parsedState };
+        
+        // Migration from old Intellect system
+        if (parsedState.intellectLevel) {
+            migratedState.abilityLevels = {
+                ...migratedState.abilityLevels,
+                Intellect: parsedState.intellectLevel,
+            };
+            migratedState.abilityXp = {
+                ...migratedState.abilityXp,
+                Intellect: parsedState.intellectXp || 0,
+            };
+            if (parsedState.isAwaitingIntellectTest) {
+                migratedState.testsAwaiting = { ...migratedState.testsAwaiting, Intellect: true };
+            }
+            if (parsedState.currentIntellectTest) {
+                migratedState.currentTests = { ...migratedState.currentTests, Intellect: parsedState.currentIntellectTest };
+            }
+             // Delete old keys
+            delete migratedState.intellectLevel;
+            delete migratedState.intellectXp;
+            delete migratedState.isAwaitingIntellectTest;
+            delete migratedState.currentIntellectTest;
+        }
+
+        // Ensure new fields exist
+        migratedState.lastSessionTimestamp = migratedState.lastSessionTimestamp || Date.now();
+        migratedState.permanentStats = migratedState.permanentStats || {};
+        migratedState.pendingActivations = migratedState.pendingActivations || [];
+        migratedState.abilityLevels = migratedState.abilityLevels || { Intellect: 1, Physique: 1, Memory: 1 };
+        migratedState.abilityXp = migratedState.abilityXp || { Intellect: 0, Physique: 0, Memory: 0 };
+        migratedState.testsAwaiting = migratedState.testsAwaiting || {};
+        migratedState.currentTests = migratedState.currentTests || {};
+        migratedState.kazukiPowerLevels = initializeKazukiPowers(migratedState.kazukiPowerLevels || {});
+        
+        return migratedState;
       }
     }
     return null;
@@ -51,11 +117,23 @@ const getInitialState = (): PlayerState | null => {
 
 export const useGameState = () => {
   const [playerState, setPlayerState] = useState<PlayerState | null>(getInitialState());
+  const playerStateRef = useRef(playerState);
   const [view, setView] = useState<View>('dashboard');
+  const [activeAbility, setActiveAbility] = useState<StatCategory | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showNewDayModal, setShowNewDayModal] = useState(false);
   const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement[]>([]);
   const [isGeneratingMission, setIsGeneratingMission] = useState(false);
+
+
+  useEffect(() => {
+      playerStateRef.current = playerState;
+  }, [playerState]);
+
+  const selectAbility = useCallback((ability: StatCategory) => {
+    setActiveAbility(ability);
+    setView('abilityDetail');
+  }, []);
 
   const clearNewlyUnlocked = useCallback(() => {
     setNewlyUnlocked([]);
@@ -84,6 +162,132 @@ export const useGameState = () => {
 
     return { newState: currentState, newlyUnlocked: [] };
   }, []);
+  
+  const startNewDay = useCallback(async (force: boolean = false) => {
+    // Prevent starting a new day if one is already in progress and not completed.
+    if (!playerStateRef.current) return;
+    const allMissionsCompleted = playerStateRef.current.missions.every(m => m.isCompleted);
+    if (!allMissionsCompleted && !force) return;
+
+    setLoadingMessage("The Sage is consulting the ethereal plane for today's trials...");
+    
+    // Using ref here to get the absolute latest state
+    const currentState = playerStateRef.current;
+    
+    // --- Failure Logic ---
+    const previousDayMissions = currentState.missions.filter(m => !m.isBossMission && !m.isTrialMission);
+    const didFailDay = previousDayMissions.length > 0 && previousDayMissions.some(m => !m.isCompleted);
+    let newConsecutiveDaysFailed = currentState.consecutiveDaysFailed || 0;
+    let newBoostedKazuki = { ...(currentState.boostedKazuki || {}) };
+    let newJournalEntries = currentState.journalEntries;
+
+    if (didFailDay) {
+        newConsecutiveDaysFailed++;
+    } else {
+        newConsecutiveDaysFailed = 0; // Reset on a successful day
+    }
+    
+    if (newConsecutiveDaysFailed >= 3) {
+        const activeKazuki = ALL_KAZUKI.find(k => currentState.level >= k.encounterLevel && !currentState.controlledKazuki.includes(k.name));
+
+        if (activeKazuki) {
+            const kazukiPower = currentState.kazukiPowerLevels[activeKazuki.name];
+            const currentPower = newBoostedKazuki[activeKazuki.name] || kazukiPower;
+            const boostedPower = Math.floor(currentPower * 1.25); // 25% stronger
+            newBoostedKazuki[activeKazuki.name] = boostedPower;
+            newJournalEntries = [...newJournalEntries, `The Sage's Whisper: Your resolve wavers. Three days of neglect have fed ${activeKazuki.name}, The ${activeKazuki.title}. Its power grows.`];
+            newConsecutiveDaysFailed = 0; // Reset counter after penalty
+        }
+    }
+    
+    const newDay = currentState.day + 1;
+    let newMissions: (Omit<Mission, 'id' | 'isCompleted'>)[] = [];
+    let missionXP = 20;
+
+    const pregenDay = PREGENERATED_JOURNEY.find(j => j.day === newDay);
+    if (pregenDay) {
+        newMissions = pregenDay.missions.map(m => ({ ...m, xp: m.difficulty === 'Hard' ? pregenDay.xp * 2 : pregenDay.xp }));
+        missionXP = pregenDay.xp;
+    } else {
+        const recurringTodaySource = currentState.recurringMissions.filter(rm => {
+            if (rm.frequencyType === 'daily') return true;
+            if (rm.frequencyType === 'every_x_days') {
+                return (newDay - rm.startDay) % rm.frequencyValue === 0;
+            }
+            return false;
+        });
+
+        let ritualXPSoFar = 0;
+        const RITUAL_XP_CAP = 50;
+        const recurringToday = [];
+        for (const rm of recurringTodaySource) {
+            if (ritualXPSoFar + rm.xp <= RITUAL_XP_CAP) {
+                recurringToday.push(rm);
+                ritualXPSoFar += rm.xp;
+            }
+        }
+
+        const recurringMissionCategories = new Set(recurringToday.map(rm => rm.category));
+        const dynamicCategories = MISSION_CATEGORIES.filter(cat => !recurringMissionCategories.has(cat));
+        
+        const recentHistory = currentState.completedMissionHistory.slice(-100);
+
+        const generatedMissions = await generateNewMissions(
+            currentState.level,
+            recentHistory,
+            dynamicCategories
+        );
+        const generatedMissionsWithXP = generatedMissions.map(m => ({
+            ...m,
+            xp: m.difficulty === 'Hard' ? missionXP * 2 : m.difficulty === 'Medium' ? missionXP : missionXP / 2
+        }));
+
+        newMissions = [...recurringToday, ...generatedMissionsWithXP];
+    }
+    
+    const finalMissions = newMissions.map(m => ({ 
+        ...m, 
+        id: uuidv4(), 
+        isCompleted: false, 
+    }));
+
+    setPlayerState(prevState => {
+        if (!prevState) return null;
+
+        const persistentMissions = prevState.missions.filter(
+            m => (m.isBossMission || m.isActivationMission || m.isTrialMission) && !m.isCompleted
+        );
+        
+        const newState = {
+            ...prevState,
+            day: newDay,
+            missions: [...finalMissions, ...persistentMissions],
+            hasSeenNewDayModal: false,
+            readingProgress: 0,
+            onDemandMissionsGeneratedToday: 0,
+            consecutiveDaysFailed: newConsecutiveDaysFailed,
+            boostedKazuki: newBoostedKazuki,
+            journalEntries: newJournalEntries,
+            lastSessionTimestamp: Date.now(),
+        };
+
+        if (newState.notificationsEnabled) {
+            notificationService.sendMissionReadyNotification(finalMissions.length);
+        }
+        
+        const { newState: stateAfterAchievements, newlyUnlocked } = checkAndUnlockAchievements(newState);
+        if (newlyUnlocked.length > 0) {
+            setNewlyUnlocked(prev => {
+                const existingIds = new Set(prev.map(p => p.id));
+                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+                return [...prev, ...uniqueNew];
+            });
+        }
+
+        return stateAfterAchievements;
+    });
+    setLoadingMessage('');
+  }, [checkAndUnlockAchievements]);
 
   useEffect(() => {
     if (playerState) {
@@ -91,8 +295,16 @@ export const useGameState = () => {
       if (!playerState.hasSeenNewDayModal && playerState.day > 1) {
         setShowNewDayModal(true);
       }
+
+      // Check for automatic new day
+      const now = new Date();
+      const lastSessionDate = new Date(playerState.lastSessionTimestamp);
+      if(now.getFullYear() > lastSessionDate.getFullYear() || now.getMonth() > lastSessionDate.getMonth() || now.getDate() > lastSessionDate.getDate()) {
+          startNewDay(true); // Force start a new day if it's a new calendar day
+      }
+
     }
-  }, [playerState]);
+  }, [playerState, startNewDay]);
 
   const startGame = useCallback(() => {
     setLoadingMessage("The Sage is preparing your first trials...");
@@ -104,7 +316,8 @@ export const useGameState = () => {
         xp: m.difficulty === 'Hard' ? firstDay.xp * 2 : firstDay.xp,
     })) : [];
 
-    const newState = { ...initialPlayerState, missions, hasSeenNewDayModal: true };
+    let newState = { ...initialPlayerState, missions, hasSeenNewDayModal: true, lastSessionTimestamp: Date.now() };
+    newState.kazukiPowerLevels = initializeKazukiPowers({});
     setPlayerState(newState);
     setLoadingMessage('');
   }, []);
@@ -114,7 +327,33 @@ export const useGameState = () => {
     setView('dashboard');
   }, []);
 
-  const handleLevelUp = useCallback((currentState: PlayerState): PlayerState => {
+  const handleAbilityLevelUp = useCallback((currentState: PlayerState, abilityId: StatCategory): PlayerState => {
+      const abilityLore = ALL_ABILITIES.find(a => a.id === abilityId);
+      if (!abilityLore) return currentState;
+
+      const currentLevel = currentState.abilityLevels[abilityId] || 1;
+      let currentXp = currentState.abilityXp[abilityId] || 0;
+      const xpPerLevel = abilityLore.xpPerLevel;
+
+      if (currentXp < xpPerLevel) return currentState;
+      
+      let newLevel = currentLevel;
+      while (currentXp >= xpPerLevel) {
+          currentXp -= xpPerLevel;
+          newLevel++;
+      }
+
+      return {
+          ...currentState,
+          abilityLevels: { ...currentState.abilityLevels, [abilityId]: newLevel },
+          abilityXp: { ...currentState.abilityXp, [abilityId]: currentXp },
+          testsAwaiting: { ...currentState.testsAwaiting, [abilityId]: true },
+          currentTests: { ...currentState.currentTests, [abilityId]: undefined },
+      };
+  }, []);
+
+
+  const handleLevelUp = useCallback(async (currentState: PlayerState): Promise<PlayerState> => {
     if (currentState.xp < XP_PER_LEVEL) return currentState;
 
     if (currentState.soundEnabled) {
@@ -138,22 +377,29 @@ export const useGameState = () => {
     // Check for new Kazuki encounters
     for (const kazuki of ALL_KAZUKI) {
         const isAlreadyControlled = (stateAfterLevelUp.controlledKazuki || []).includes(kazuki.name);
-        const missionExists = stateAfterLevelUp.missions.some(m => m.isBossMission && m.title.includes(kazuki.name));
+        const missionExists = stateAfterLevelUp.missions.some(m => m.isTrialMission && m.title.includes(kazuki.name));
 
         if (stateAfterLevelUp.level >= kazuki.encounterLevel && !isAlreadyControlled && !missionExists) {
-            const bossMission: Mission = {
+            setLoadingMessage(`A new presence reveals itself... The Sage is interpreting the trial of ${kazuki.name}...`);
+            const trialData = await generateKazukiTrialMission(stateAfterLevelUp.level, kazuki);
+            setLoadingMessage('');
+
+            const kazukiPower = stateAfterLevelUp.kazukiPowerLevels[kazuki.name];
+
+            const trialMission: Mission = {
                 id: uuidv4(),
-                title: `Confront ${kazuki.name}: ${kazuki.title}`,
-                description: `A new inner demon has revealed itself. Confront and control ${kazuki.name}. Study its nature in the Kazuki Codex.`,
+                title: `Trial of ${kazuki.name}: ${trialData.title}`,
+                description: trialData.description,
                 category: 'Soul',
                 isCompleted: false,
-                xp: Math.floor(kazuki.powerPoints / 10), // High XP reward based on power
+                xp: 50, // Trials give some base XP
+                powerPointsReward: Math.floor(kazukiPower / 5), // Reward is 20% of the demon's power
                 difficulty: 'Hard',
-                isBossMission: true,
+                isTrialMission: true,
             };
             stateAfterLevelUp = {
                 ...stateAfterLevelUp,
-                missions: [...stateAfterLevelUp.missions, bossMission]
+                missions: [...stateAfterLevelUp.missions, trialMission]
             };
         }
     }
@@ -161,230 +407,127 @@ export const useGameState = () => {
     return stateAfterLevelUp;
   }, []);
   
-  const completeMission = useCallback((id: string) => {
-    if (!playerState) return;
+  const completeMission = useCallback(async (id: string) => {
+    const prevState = playerStateRef.current;
+    if (!prevState) return;
     
-    setPlayerState(prevState => {
-      if (!prevState) return null;
-      
-      const newMissions = prevState.missions.map(mission => 
-        mission.id === id ? { ...mission, isCompleted: true } : mission
-      );
-      
-      const mission = prevState.missions.find(m => m.id === id);
-      if (!mission || mission.isCompleted) return prevState;
-      
-      const xpMultiplier = prevState.xpMultiplier || 1.0;
-      const xpGained = Math.round(mission.xp * xpMultiplier);
-      let newXp = prevState.xp + xpGained;
-      let newSoulCoins = prevState.soulCoins;
-      let newPowerPoints = prevState.powerPoints + Math.floor(xpGained * 2 / 5);
+    const mission = prevState.missions.find(m => m.id === id);
+    if (!mission || mission.isCompleted) return;
 
-      const allCompleted = newMissions.every(m => m.isCompleted);
-      if (allCompleted) {
-        if (prevState.soundEnabled) audioService.playAllMissionsComplete();
-        newXp += 10; 
-        newSoulCoins += 2;
-        newPowerPoints += Math.floor(10 * 2 / 5); // 4 power points
-      } else {
-        if (prevState.soundEnabled) audioService.playMissionComplete();
-      }
+    const newMissions = prevState.missions.map(m => 
+      m.id === id ? { ...m, isCompleted: true } : m
+    );
       
-      let newControlledKazuki = prevState.controlledKazuki || [];
-      let newXpMultiplier = prevState.xpMultiplier || 1.0;
-      if (mission.isBossMission) {
-          const controlledKazukiName = ALL_KAZUKI.find(k => mission.title.includes(k.name))?.name;
-          if (controlledKazukiName && !newControlledKazuki.includes(controlledKazukiName)) {
-              newControlledKazuki = [...newControlledKazuki, controlledKazukiName];
-              newXpMultiplier += 0.1;
-          }
-      }
+    const xpMultiplier = prevState.xpMultiplier || 1.0;
+    const xpGained = Math.round(mission.xp * xpMultiplier);
+    let newXp = prevState.xp + xpGained;
+    let newSoulCoins = prevState.soulCoins;
+    let newPowerPoints = prevState.powerPoints + Math.floor(xpGained * 2 / 5) + (mission.powerPointsReward || 0);
+    
+    const allCompleted = newMissions.every(m => m.isCompleted);
+    if (allCompleted) {
+      if (prevState.soundEnabled) audioService.playAllMissionsComplete();
+      newXp += 10; 
+      newSoulCoins += 2;
+      newPowerPoints += Math.floor(10 * 2 / 5); // 4 power points
+    } else {
+      if (prevState.soundEnabled) audioService.playMissionComplete();
+    }
+    
+    // Handle Activation Missions
+    let newPermanentStats = { ...prevState.permanentStats };
+    let newPendingActivations = [...prevState.pendingActivations];
+    if (mission.isActivationMission && mission.activationId) {
+        const activation = newPendingActivations.find(p => p.id === mission.activationId);
+        if (activation) {
+            const stat = activation.shopItemId;
+            newPermanentStats[stat] = (newPermanentStats[stat] || 0) + activation.statBonus;
+            newPendingActivations = newPendingActivations.filter(p => p.id !== mission.activationId);
+        }
+    }
 
-      let tempState: PlayerState = {
+    let tempState: PlayerState = {
+      ...prevState,
+      missions: newMissions,
+      xp: newXp,
+      soulCoins: newSoulCoins,
+      powerPoints: newPowerPoints,
+      completedMissionHistory: [...prevState.completedMissionHistory, mission.title],
+      permanentStats: newPermanentStats,
+      pendingActivations: newPendingActivations,
+    };
+    
+    // Grant Ability XP
+    const categoryToAbilityMap: Record<MissionCategory, StatCategory | null> = { 'Health': 'Physique', 'Mind': 'Intellect', 'Soul': 'Memory', 'Wealth': null };
+    const mappedAbility = categoryToAbilityMap[mission.category];
+
+    let stateAfterAbilityUpdate = tempState;
+    if (mappedAbility) {
+        const newAbilityXp = (tempState.abilityXp[mappedAbility] || 0) + Math.floor(xpGained / 2); // Gain half of XP as Ability XP
+        stateAfterAbilityUpdate = {
+            ...tempState,
+            abilityXp: {
+                ...tempState.abilityXp,
+                [mappedAbility]: newAbilityXp,
+            },
+        };
+        stateAfterAbilityUpdate = handleAbilityLevelUp(stateAfterAbilityUpdate, mappedAbility);
+    }
+
+
+    let stateAfterLevelUp = await handleLevelUp(stateAfterAbilityUpdate);
+    
+    const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
+    if (newlyUnlocked.length > 0) {
+      setNewlyUnlocked(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
+          return [...prev, ...uniqueNew];
+      });
+    }
+
+    setPlayerState(finalState);
+  }, [handleLevelUp, checkAndUnlockAchievements, handleAbilityLevelUp]);
+
+  const completeReadingBlock = useCallback(async () => {
+    const prevState = playerStateRef.current;
+    if (!prevState || prevState.readingProgress >= 3) return;
+
+    const xpRewards = [25, 20, 15];
+    const xpEarned = xpRewards[prevState.readingProgress];
+    
+    if (prevState.soundEnabled) audioService.playMissionComplete();
+    
+    const xpMultiplier = prevState.xpMultiplier || 1.0;
+    const xpGained = Math.round(xpEarned * xpMultiplier);
+
+    const newIntellectXp = (prevState.abilityXp['Intellect'] || 0) + Math.floor(xpGained / 2);
+    
+    let tempState: PlayerState = {
         ...prevState,
-        missions: newMissions,
-        xp: newXp,
-        soulCoins: newSoulCoins,
-        powerPoints: newPowerPoints,
-        completedMissionHistory: [...prevState.completedMissionHistory, mission.title],
-        controlledKazuki: newControlledKazuki,
-        xpMultiplier: newXpMultiplier,
-      };
-
-      let stateAfterLevelUp = handleLevelUp(tempState);
-      
-      const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
-      if (newlyUnlocked.length > 0) {
+        xp: prevState.xp + xpGained,
+        powerPoints: prevState.powerPoints + Math.floor(xpGained * 2 / 5),
+        readingProgress: prevState.readingProgress + 1,
+        abilityXp: {
+            ...prevState.abilityXp,
+            Intellect: newIntellectXp,
+        }
+    };
+    
+    let stateAfterAbilityLevelUp = handleAbilityLevelUp(tempState, 'Intellect');
+    let stateAfterLevelUp = await handleLevelUp(stateAfterAbilityLevelUp);
+    
+    const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
+    if (newlyUnlocked.length > 0) {
         setNewlyUnlocked(prev => {
             const existingIds = new Set(prev.map(p => p.id));
             const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
             return [...prev, ...uniqueNew];
         });
-      }
-
-      return finalState;
-    });
-  }, [playerState, handleLevelUp, checkAndUnlockAchievements]);
-
-  const completeReadingBlock = useCallback(() => {
-    if (!playerState || playerState.readingProgress >= 3) return;
-
-    const xpRewards = [25, 20, 15];
-    const xpEarned = xpRewards[playerState.readingProgress];
-
-    setPlayerState(prevState => {
-        if (!prevState) return null;
-        
-        if (prevState.soundEnabled) audioService.playMissionComplete();
-        
-        const xpMultiplier = prevState.xpMultiplier || 1.0;
-        const xpGained = Math.round(xpEarned * xpMultiplier);
-
-        let tempState: PlayerState = {
-            ...prevState,
-            xp: prevState.xp + xpGained,
-            powerPoints: prevState.powerPoints + Math.floor(xpGained * 2 / 5),
-            readingProgress: prevState.readingProgress + 1,
-        };
-        
-        let stateAfterLevelUp = handleLevelUp(tempState);
-        
-        const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(stateAfterLevelUp);
-        if (newlyUnlocked.length > 0) {
-            setNewlyUnlocked(prev => {
-                const existingIds = new Set(prev.map(p => p.id));
-                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
-                return [...prev, ...uniqueNew];
-            });
-        }
-        
-        return finalState;
-    });
-  }, [playerState, handleLevelUp, checkAndUnlockAchievements]);
-  
-  const startNewDay = useCallback(async () => {
-    if (!playerState) return;
-
-    setLoadingMessage("The Sage is consulting the ethereal plane for today's trials...");
-    
-    // --- Failure Logic ---
-    const previousDayMissions = playerState.missions.filter(m => !m.isBossMission);
-    const didFailDay = previousDayMissions.length > 0 && previousDayMissions.some(m => !m.isCompleted);
-    let newConsecutiveDaysFailed = playerState.consecutiveDaysFailed || 0;
-    let newBoostedKazuki = { ...(playerState.boostedKazuki || {}) };
-    let newJournalEntries = playerState.journalEntries;
-    let penaltyApplied = false;
-
-    if (didFailDay) {
-        newConsecutiveDaysFailed++;
-    } else {
-        newConsecutiveDaysFailed = 0; // Reset on a successful day
     }
     
-    if (newConsecutiveDaysFailed >= 3) {
-        const activeBossMission = playerState.missions.find(m => m.isBossMission && !m.isCompleted);
-        if (activeBossMission) {
-            const kazukiData = ALL_KAZUKI.find(k => activeBossMission.title.includes(k.name));
-            if (kazukiData) {
-                const currentPower = newBoostedKazuki[kazukiData.name] || kazukiData.powerPoints;
-                const boostedPower = Math.floor(currentPower * 1.25); // 25% stronger
-                newBoostedKazuki[kazukiData.name] = boostedPower;
-
-                newJournalEntries = [...newJournalEntries, `The Sage's Whisper: Your resolve wavers. Three days of neglect have fed ${kazukiData.name}, The ${kazukiData.title}. Its power grows.`];
-                
-                newConsecutiveDaysFailed = 0; // Reset counter after penalty
-                penaltyApplied = true;
-            }
-        }
-    }
-    
-    const newDay = playerState.day + 1;
-    let newMissions: (Omit<Mission, 'id' | 'isCompleted'>)[] = [];
-    let missionXP = 20;
-
-    const pregenDay = PREGENERATED_JOURNEY.find(j => j.day === newDay);
-    if (pregenDay) {
-        newMissions = pregenDay.missions.map(m => ({ ...m, xp: m.difficulty === 'Hard' ? pregenDay.xp * 2 : pregenDay.xp }));
-        missionXP = pregenDay.xp;
-    } else {
-        const recurringTodaySource = playerState.recurringMissions.filter(rm => {
-            if (rm.frequencyType === 'daily') return true;
-            if (rm.frequencyType === 'every_x_days') {
-                return (newDay - rm.startDay) % rm.frequencyValue === 0;
-            }
-            return false;
-        });
-
-        let ritualXPSoFar = 0;
-        const RITUAL_XP_CAP = 50;
-        const recurringToday = [];
-        for (const rm of recurringTodaySource) {
-            if (ritualXPSoFar + rm.xp <= RITUAL_XP_CAP) {
-                recurringToday.push(rm);
-                ritualXPSoFar += rm.xp;
-            }
-        }
-
-        const recurringMissionCategories = new Set(recurringToday.map(rm => rm.category));
-        const dynamicCategories = MISSION_CATEGORIES.filter(cat => !recurringMissionCategories.has(cat));
-        
-        const recentHistory = playerState.completedMissionHistory.slice(-100);
-
-        const generatedMissions = await generateNewMissions(
-            playerState.level,
-            recentHistory,
-            dynamicCategories
-        );
-        const generatedMissionsWithXP = generatedMissions.map(m => ({
-            ...m,
-            xp: m.difficulty === 'Hard' ? missionXP * 2 : m.difficulty === 'Medium' ? missionXP : missionXP / 2
-        }));
-
-        newMissions = [...recurringToday, ...generatedMissionsWithXP];
-    }
-    
-    const finalMissions = newMissions.map(m => ({ 
-        ...m, 
-        id: uuidv4(), 
-        isCompleted: false, 
-    }));
-
-    setPlayerState(prevState => {
-        if (!prevState) return null;
-
-        const persistentMissions = prevState.missions.filter(
-            m => m.isBossMission && !m.isCompleted
-        );
-        
-        const newState = {
-            ...prevState,
-            day: newDay,
-            missions: [...finalMissions, ...persistentMissions],
-            hasSeenNewDayModal: false,
-            readingProgress: 0,
-            onDemandMissionsGeneratedToday: 0,
-            consecutiveDaysFailed: newConsecutiveDaysFailed,
-            boostedKazuki: newBoostedKazuki,
-            journalEntries: newJournalEntries,
-        };
-
-        if (newState.notificationsEnabled) {
-            notificationService.sendMissionReadyNotification(finalMissions.length);
-        }
-        
-        const { newState: finalState, newlyUnlocked } = checkAndUnlockAchievements(newState);
-        if (newlyUnlocked.length > 0) {
-            setNewlyUnlocked(prev => {
-                const existingIds = new Set(prev.map(p => p.id));
-                const uniqueNew = newlyUnlocked.filter(n => !existingIds.has(n.id));
-                return [...prev, ...uniqueNew];
-            });
-        }
-
-        return finalState;
-    });
-    setLoadingMessage('');
-  }, [playerState, checkAndUnlockAchievements]);
+    setPlayerState(finalState);
+  }, [handleLevelUp, checkAndUnlockAchievements, handleAbilityLevelUp]);
 
   const confirmNewDay = useCallback(() => {
     setPlayerState(prevState => prevState ? { ...prevState, hasSeenNewDayModal: true } : null);
@@ -443,7 +586,6 @@ export const useGameState = () => {
   const toggleSound = useCallback(() => {
     setPlayerState(p => p ? { ...p, soundEnabled: !p.soundEnabled } : null);
     if (playerState && !playerState.soundEnabled) {
-        // Play sound when enabling
         audioService.playMissionComplete();
     }
   }, [playerState]);
@@ -497,6 +639,129 @@ export const useGameState = () => {
     }
   }, [playerState]);
 
+  const purchaseStatBoost = useCallback(async (itemId: StatCategory, pointsToBuy: number, cost: number, promptSuggestion: string): Promise<{success: boolean, reason?: string}> => {
+      if (!playerState) return { success: false, reason: 'No player state.'};
+      if (playerState.soulCoins < cost) return { success: false, reason: 'Not enough Soul Coins.'};
+
+      setLoadingMessage("The Sage is forging your activation trial...");
+
+      try {
+          const missionData = await generateActivationMission(playerState.level, itemId, pointsToBuy, cost, promptSuggestion);
+          
+          const missionId = uuidv4();
+          const activationId = uuidv4();
+
+          const newMission: Mission = {
+              ...missionData,
+              id: missionId,
+              category: 'Soul', // Activation missions are always Soul category
+              isCompleted: false,
+              xp: Math.floor(cost * 1.5), // High XP for activation
+              isActivationMission: true,
+              activationId: activationId
+          };
+
+          const newActivation: ActivationTrial = {
+              id: activationId,
+              shopItemId: itemId,
+              statBonus: pointsToBuy,
+              missionId: missionId
+          };
+
+          setPlayerState(p => {
+              if (!p) return null;
+              return {
+                  ...p,
+                  soulCoins: p.soulCoins - cost,
+                  missions: [...p.missions, newMission],
+                  pendingActivations: [...p.pendingActivations, newActivation],
+              }
+          });
+          return { success: true };
+      } catch (error) {
+          console.error("Failed to generate activation mission:", error);
+          return { success: false, reason: 'The Sage could not forge this trial. Please try again.'};
+      } finally {
+          setLoadingMessage("");
+      }
+
+  }, [playerState]);
+
+  const controlKazuki = useCallback(async (kazukiName: string): Promise<{success: boolean, reason?: string}> => {
+      if (!playerState) return { success: false, reason: 'No player state.'};
+      
+      const kazukiPower = playerState.boostedKazuki?.[kazukiName] || playerState.kazukiPowerLevels?.[kazukiName];
+      if (!kazukiPower) return { success: false, reason: 'Kazuki power not found.'};
+      if (playerState.powerPoints < kazukiPower) return { success: false, reason: 'Not enough Power Points.'};
+
+      // Play sound
+      if(playerState.soundEnabled) audioService.playAllMissionsComplete(); // A triumphant sound
+
+      setPlayerState(p => {
+          if (!p) return null;
+          const newControlledKazuki = [...(p.controlledKazuki || []), kazukiName];
+          const newXpMultiplier = (p.xpMultiplier || 1.0) + 0.1;
+          
+          return {
+              ...p,
+              powerPoints: p.powerPoints - kazukiPower,
+              controlledKazuki: newControlledKazuki,
+              xpMultiplier: newXpMultiplier,
+          };
+      });
+
+      return { success: true };
+  }, [playerState]);
+
+  const startAbilityTest = useCallback(async (abilityId: StatCategory): Promise<string | null> => {
+      if (!playerState || !playerState.testsAwaiting[abilityId]) return null;
+      setLoadingMessage("The Sage is preparing your worthiness test...");
+      try {
+          const abilityLevel = playerState.abilityLevels[abilityId] || 1;
+          const question = await generateAbilityTestQuestion(abilityId, abilityLevel);
+          setPlayerState(p => p ? { ...p, currentTests: { ...p.currentTests, [abilityId]: { question, isSubmitted: false } } } : null);
+          return question;
+      } catch (error) {
+          console.error(`Failed to generate ${abilityId} test:`, error);
+          return "The Sage could not conjure a question. Please try again later.";
+      } finally {
+          setLoadingMessage("");
+      }
+  }, [playerState]);
+
+  const submitAbilityTestAnswer = useCallback(async (abilityId: StatCategory, answer: string): Promise<{evaluation: string, isWorthy: boolean} | null> => {
+      if (!playerState || !playerState.currentTests[abilityId]) return null;
+      setLoadingMessage("The Sage is evaluating your response...");
+      try {
+          const { question } = playerState.currentTests[abilityId]!;
+          const result = await evaluateAbilityTestAnswer(question, answer, abilityId);
+          
+          setPlayerState(p => {
+              if (!p) return null;
+              if (result.isWorthy) {
+                  return { 
+                      ...p, 
+                      testsAwaiting: { ...p.testsAwaiting, [abilityId]: false },
+                      currentTests: { ...p.currentTests, [abilityId]: undefined } 
+                  };
+              } else {
+                  // Allow retry
+                  const updatedTest = { ...p.currentTests[abilityId]!, isSubmitted: true };
+                  return { ...p, currentTests: { ...p.currentTests, [abilityId]: updatedTest } };
+              }
+          });
+
+          return result;
+
+      } catch (error) {
+          console.error(`Error submitting ${abilityId} test answer:`, error);
+          return { evaluation: "The connection to the Sage was lost. Please try again.", isWorthy: false };
+      } finally {
+          setLoadingMessage("");
+      }
+  }, [playerState]);
+  
+
   return {
     playerState,
     view,
@@ -504,12 +769,14 @@ export const useGameState = () => {
     showNewDayModal,
     newlyUnlocked,
     isGeneratingMission,
+    activeAbility,
     startGame,
     importState,
     setView,
+    selectAbility,
     completeMission,
     completeReadingBlock,
-    startNewDay,
+    startNewDay: () => startNewDay(true), // Manual start is always a force
     confirmNewDay,
     saveJournalEntry,
     addRecurringMission,
@@ -519,5 +786,9 @@ export const useGameState = () => {
     resetGame,
     clearNewlyUnlocked,
     generateMissionByCategory,
+    purchaseStatBoost,
+    startAbilityTest,
+    submitAbilityTestAnswer,
+    controlKazuki,
   };
 };

@@ -5,6 +5,8 @@ import type { PlayerState } from '../types.ts';
 
 interface BossBattlesPageProps {
   playerState: PlayerState;
+  onControlKazuki: (kazukiName: string) => Promise<{success: boolean, reason?: string}>;
+  showToast: (message: string, type: 'success' | 'error') => void;
 }
 
 const LockedKazukiCard: React.FC<{ level: number }> = ({ level }) => (
@@ -19,18 +21,20 @@ const LockedKazukiCard: React.FC<{ level: number }> = ({ level }) => (
     </div>
 );
 
-const BossBattlesPage: React.FC<BossBattlesPageProps> = ({ playerState }) => {
+const BossBattlesPage: React.FC<BossBattlesPageProps> = ({ playerState, onControlKazuki, showToast }) => {
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-bold font-serif text-slate-800 mb-2">The Kazuki Codex</h2>
-        <p className="text-slate-600">"To know thy enemy is to know thyself." Study the nature of the inner demons you will face on your path. Understanding is the first step to control.</p>
+        <p className="text-slate-600">"To know thy enemy is to know thyself." Study the nature of the inner demons, complete their trials to gather power, then expend that power to gain control.</p>
       </div>
       
       <div className="space-y-12">
         {ALL_KAZUKI.map(kazuki => {
             const isUnlocked = playerState.level >= kazuki.encounterLevel;
-            if (isUnlocked) {
+            const powerLevel = playerState.kazukiPowerLevels?.[kazuki.name];
+
+            if (isUnlocked && powerLevel) {
                 return (
                     <KazukiProfile 
                         key={kazuki.name}
@@ -38,6 +42,9 @@ const BossBattlesPage: React.FC<BossBattlesPageProps> = ({ playerState }) => {
                         playerPowerPoints={playerState.powerPoints}
                         isControlled={(playerState.controlledKazuki || []).includes(kazuki.name)}
                         boostedPower={playerState.boostedKazuki?.[kazuki.name]}
+                        powerLevel={powerLevel}
+                        onControl={onControlKazuki}
+                        showToast={showToast}
                     />
                 );
             }

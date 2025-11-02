@@ -1,6 +1,6 @@
 import React from 'react';
-import type { View } from '../types.js';
-import { LEVEL_TITLES } from '../services/lore.js';
+import type { View } from '../types.ts';
+import { LEVEL_TITLES } from '../services/lore.ts';
 
 interface SidebarProps {
   currentView: View;

@@ -30,6 +30,7 @@ export interface Mission {
   isCompleted: boolean;
   xp: number;
   difficulty?: 'Easy' | 'Medium' | 'Hard';
+  isBossMission?: boolean;
 }
 
 export interface RecurringMission {
@@ -58,6 +59,12 @@ export interface PlayerState {
   soundEnabled: boolean;
   unlockedAchievements: string[];
   readingProgress: number; // 0, 1, or 2 for 30, 60, 90 mins
+  powerPoints: number;
+  controlledKazuki: string[];
+  xpMultiplier: number;
+  consecutiveDaysFailed: number;
+  onDemandMissionsGeneratedToday: number;
+  boostedKazuki: Record<string, number>; // { [kazukiName]: boostedPower }
 }
 
 export interface Achievement {
@@ -78,6 +85,20 @@ export interface BreathingStyle {
         reps: number;
         steps: { type: 'Inhale' | 'Hold' | 'Exhale'; duration: number }[];
     }
+}
+
+export interface Kazuki {
+    name: string; // The cultural name, e.g., Zahhak
+    title: string; // The in-game title, e.g., Ryojin, The Drifter
+    description: string;
+    difficulty: 'Novice' | 'Adept' | 'Master' | 'Grandmaster' | 'Legend' | 'Sage';
+    encounterLevel: number;
+    controlReward: string;
+    strengths: string[];
+    weaknesses: string[];
+    powerPoints: number;
+    origin: string; // e.g., Persian
+    domain: string; // e.g., Distraction, fragmented focus
 }
 
 export interface DailySummary {

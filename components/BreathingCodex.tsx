@@ -1,7 +1,7 @@
 import React from 'react';
-import { BREATHING_STYLES } from '../services/lore.js';
-import type { BreathingStyle as BreathingStyleType } from '../types.js';
-import BreathingExercisePlayer from './BreathingExercisePlayer.js';
+import { BREATHING_STYLES } from '../services/lore.ts';
+import type { BreathingStyle as BreathingStyleType } from '../types.ts';
+import BreathingExercisePlayer from './BreathingExercisePlayer.tsx';
 
 interface BreathingCodexProps {
     playerLevel: number;

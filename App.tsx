@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import { useGameState } from './hooks/useGameState.js';
-import Sidebar from './components/Sidebar.js';
-import Dashboard from './components/Dashboard.js';
-import DailyMissionsPage from './components/DailyMissionsPage.js';
-import StatsAndProgress from './components/StatsAndProgress.js';
-import LevelPage from './components/LevelPage.js';
-import BreathingCodex from './components/BreathingCodex.js';
-import ReflectionJournalPage from './components/ReflectionJournalPage.js';
-import RitualsPage from './components/RitualsPage.js';
-import BossBattlesPage from './components/BossBattlesPage.js';
-import SoulShopPage from './components/SoulShopPage.js';
-import SettingsPage from './components/SettingsPage.js';
-import LandingPage from './components/LandingPage.js';
-import LoadingScreen from './components/LoadingScreen.js';
-import NewDayModal from './components/NewDayModal.js';
-import BreathingExercisePlayer from './components/BreathingExercisePlayer.js';
-import AchievementsPage from './components/AchievementsPage.js';
-import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions.js';
-import { exportPlayerState, importPlayerState } from './services/apiService.js';
-import { audioService } from './services/audioService.js';
-import { BREATHING_STYLES } from './services/lore.js';
-import type { PlayerState } from './types.js';
+import { useGameState } from './hooks/useGameState.ts';
+import Sidebar from './components/Sidebar.tsx';
+import Dashboard from './components/Dashboard.tsx';
+import DailyMissionsPage from './components/DailyMissionsPage.tsx';
+import StatsAndProgress from './components/StatsAndProgress.tsx';
+import LevelPage from './components/LevelPage.tsx';
+import BreathingCodex from './components/BreathingCodex.tsx';
+import ReflectionJournalPage from './components/ReflectionJournalPage.tsx';
+import RitualsPage from './components/RitualsPage.tsx';
+import BossBattlesPage from './components/BossBattlesPage.tsx';
+import SoulShopPage from './components/SoulShopPage.tsx';
+import SettingsPage from './components/SettingsPage.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import LoadingScreen from './components/LoadingScreen.tsx';
+import NewDayModal from './components/NewDayModal.tsx';
+import BreathingExercisePlayer from './components/BreathingExercisePlayer.tsx';
+import AchievementsPage from './components/AchievementsPage.tsx';
+import { PREGENERATED_JOURNEY } from './services/pregeneratedMissions.ts';
+import { exportPlayerState, importPlayerState } from './services/apiService.ts';
+import { audioService } from './services/audioService.ts';
+import { BREATHING_STYLES } from './services/lore.ts';
+import type { PlayerState, MissionCategory } from './types.ts';
 
 
 // A simple Toast provider and hook to show notifications
@@ -56,11 +56,11 @@ export const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children 
 
 const AppContent: React.FC = () => {
     const { 
-        playerState, view, loadingMessage, showNewDayModal, newlyUnlocked,
+        playerState, view, loadingMessage, showNewDayModal, newlyUnlocked, isGeneratingMission,
         startGame, importState, setView, completeMission, completeReadingBlock,
         startNewDay, confirmNewDay, saveJournalEntry,
         addRecurringMission, deleteRecurringMission, toggleNotifications,
-        toggleSound, resetGame, clearNewlyUnlocked
+        toggleSound, resetGame, clearNewlyUnlocked, generateMissionByCategory
     } = useGameState();
     const [activeBreathingExercise, setActiveBreathingExercise] = useState<string | null>(null);
     
@@ -114,6 +114,19 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const handleGenerateMission = async (category: MissionCategory) => {
+        const result = await generateMissionByCategory(category);
+        if (!result.success) {
+            if (result.reason === 'no_points') {
+                showToast("Not enough Power Points! (15 required)", 'error');
+            } else if (result.reason === 'limit_reached') {
+                showToast("You can only generate 2 extra missions per day.", 'error');
+            } else {
+                showToast("The Sage could not conjure a mission. Try again.", 'error');
+            }
+        }
+    };
+
     if (loadingMessage) {
         return <LoadingScreen message={loadingMessage} />;
     }
@@ -130,7 +143,16 @@ const AppContent: React.FC = () => {
             case 'dashboard':
                 return <Dashboard playerState={playerState} saveJournalEntry={saveJournalEntry} onPracticeBreathing={setActiveBreathingExercise} completeReadingBlock={completeReadingBlock} />;
             case 'missions':
-                return <DailyMissionsPage missions={playerState.missions} onCompleteMission={completeMission} dailySummary={dailySummary ? {title: dailySummary.title, realm: dailySummary.realm, xpPerMission: dailySummary.xp, breathStyle: dailySummary.breathStyle, kazukiWatch: dailySummary.kazukiWatch } : null} readingProgress={playerState.readingProgress} onCompleteReadingBlock={completeReadingBlock} />;
+                return <DailyMissionsPage 
+                            missions={playerState.missions} 
+                            onCompleteMission={completeMission} 
+                            dailySummary={dailySummary ? {title: dailySummary.title, realm: dailySummary.realm, xpPerMission: dailySummary.xp, breathStyle: dailySummary.breathStyle, kazukiWatch: dailySummary.kazukiWatch } : null} 
+                            readingProgress={playerState.readingProgress} 
+                            onCompleteReadingBlock={completeReadingBlock}
+                            playerState={playerState}
+                            onGenerateMission={handleGenerateMission}
+                            isGeneratingMission={isGeneratingMission}
+                        />;
             case 'progress':
                 return <StatsAndProgress playerState={playerState} />;
             case 'levels':
@@ -144,7 +166,7 @@ const AppContent: React.FC = () => {
             case 'achievements':
                 return <AchievementsPage unlockedAchievements={playerState.unlockedAchievements} />;
             case 'bosses':
-                return <BossBattlesPage />;
+                return <BossBattlesPage playerState={playerState} />;
             case 'shop':
                 return <SoulShopPage />;
             case 'settings':

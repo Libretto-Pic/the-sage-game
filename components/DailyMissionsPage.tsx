@@ -1,7 +1,8 @@
 import React from 'react';
-import type { Mission, DailySummary } from '../types.js';
-import DailyMissions from './DailyMissions.js';
-import ReadingChallenge from './ReadingChallenge.js';
+import type { PlayerState, Mission, DailySummary, MissionCategory } from '../types.ts';
+import DailyMissions from './DailyMissions.tsx';
+import ReadingChallenge from './ReadingChallenge.tsx';
+import OnDemandMissionGenerator from './OnDemandMissionGenerator.tsx';
 
 interface DailyMissionsPageProps {
     missions: Mission[];
@@ -9,11 +10,30 @@ interface DailyMissionsPageProps {
     dailySummary: DailySummary | null;
     readingProgress: number;
     onCompleteReadingBlock: () => void;
+    playerState: PlayerState;
+    onGenerateMission: (category: MissionCategory) => void;
+    isGeneratingMission: boolean;
 }
 
-const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompleteMission, dailySummary, readingProgress, onCompleteReadingBlock }) => {
-    const completedCount = missions.filter(m => m.isCompleted).length;
-    const allCompleted = missions.length > 0 && completedCount === missions.length;
+const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ 
+    missions, 
+    onCompleteMission, 
+    dailySummary, 
+    readingProgress, 
+    onCompleteReadingBlock,
+    playerState,
+    onGenerateMission,
+    isGeneratingMission
+}) => {
+    const dailyMissions = missions.filter(m => !m.isBossMission);
+    const bossMissions = missions.filter(m => m.isBossMission);
+    const completedDailyCount = dailyMissions.filter(m => m.isCompleted).length;
+    const allDailyCompleted = dailyMissions.length > 0 && completedDailyCount === dailyMissions.length;
+
+    const completedBossCount = bossMissions.filter(m => m.isCompleted).length;
+    const totalCompleted = completedDailyCount + completedBossCount;
+    const allMissionsCompleted = missions.length > 0 && totalCompleted === missions.length;
+
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
@@ -29,14 +49,28 @@ const DailyMissionsPage: React.FC<DailyMissionsPageProps> = ({ missions, onCompl
                         </div>
                     </div>
                 )}
-                <h2 className="text-3xl font-bold font-serif text-slate-800 mb-2">Today's Trials ({completedCount}/{missions.length})</h2>
+                <h2 className="text-3xl font-bold font-serif text-slate-800 mb-2">Today's Trials ({totalCompleted}/{missions.length})</h2>
                 <p className="text-slate-600">Forge your will, one task at a time. The path to enlightenment is paved with small, consistent victories.</p>
             </div>
             
             <ReadingChallenge progress={readingProgress} onComplete={onCompleteReadingBlock} />
-            <DailyMissions missions={missions} onCompleteMission={onCompleteMission} isPreview={false} />
+            
+            {bossMissions.length > 0 && (
+                 <DailyMissions missions={bossMissions} onCompleteMission={onCompleteMission} isPreview={false} />
+            )}
 
-            {allCompleted && (
+            <DailyMissions missions={dailyMissions} onCompleteMission={onCompleteMission} isPreview={false} />
+
+            {allDailyCompleted && (
+                // FIX: Pass the entire `playerState` object to `OnDemandMissionGenerator` as it expects this prop, not `powerPoints` individually.
+                <OnDemandMissionGenerator 
+                    playerState={playerState}
+                    onGenerate={onGenerateMission}
+                    isGenerating={isGeneratingMission}
+                />
+            )}
+
+            {allMissionsCompleted && (
                 <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-6 rounded-xl shadow-sm text-center">
                     <h3 className="text-xl font-bold">All Trials Conquered!</h3>
                     <p className="mt-2">You have demonstrated discipline and resolve. The Sage is pleased. Rest and reflect on your victories.</p>

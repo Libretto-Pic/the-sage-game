@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlayerState } from '../types.js';
-import { REALMS, LEVEL_TITLES } from '../services/lore.js';
-import { XP_PER_LEVEL } from '../constants.js';
+import { PlayerState } from '../types.ts';
+import { REALMS, LEVEL_TITLES } from '../services/lore.ts';
+import { XP_PER_LEVEL } from '../constants.ts';
 
 const StatBar: React.FC<{ label: string; value: number; color: string; icon: React.ReactNode }> = ({ label, value, color, icon }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-4">

@@ -1,7 +1,7 @@
 // Implemented the DailyMissions component to display missions on the dashboard and missions page.
 import React from 'react';
-import type { Mission } from '../types.js';
-import MissionItem from './MissionItem.js';
+import type { Mission } from '../types.ts';
+import MissionItem from './MissionItem.tsx';
 
 interface DailyMissionsProps {
     missions: Mission[];

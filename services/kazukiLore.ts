@@ -1,0 +1,162 @@
+import type { Kazuki } from '../types.ts';
+
+// Power levels are scaled to provide a challenge relative to the player's expected Power Point generation at that level.
+// Each rank represents how deep into the human psyche the corruption goes—from surface habit to existential bondage.
+export const ALL_KAZUKI: Kazuki[] = [
+    {
+        name: 'Zahhak',
+        title: 'Ryojin, The Drifter',
+        description: 'From Persian lore, Zahhak is the snake king of distraction. It tempts you into meaningless movement, ruling the domain of fragmented focus and chaos.',
+        difficulty: 'Novice',
+        encounterLevel: 35,
+        powerPoints: 300,
+        controlReward: 'Unlocks Breath of Stillness & +0.1 XP Multiplier.',
+        strengths: ['Fragmented focus', 'Endless scrolling', 'Reacting without thinking'],
+        weaknesses: ['Breath of Stillness', 'Single-tasking', 'Scheduled deep work'],
+        origin: 'Persian',
+        domain: 'Chaos & Distraction'
+    },
+    {
+        name: 'Asmodeus',
+        title: 'Mura, The Feaster',
+        description: 'From Hebrew lore, Asmodeus feeds your pleasure loops. It embodies the insatiable hunger of lust, gluttony, and sensory addiction.',
+        difficulty: 'Novice',
+        encounterLevel: 40,
+        powerPoints: 500,
+        controlReward: 'Unlocks Breath of Control & +0.1 XP Multiplier.',
+        strengths: ['Sensory addiction', 'Impulsive pleasure-seeking', 'Ignoring long-term consequences'],
+        weaknesses: ['Breath of Control', 'Mindful consumption', 'Delaying gratification'],
+        origin: 'Hebrew / Christian',
+        domain: 'Lust & Desire'
+    },
+    {
+        name: 'Dolos',
+        title: 'Akae, The Whisperer',
+        description: 'From Greek mythology, Dolos is the master of trickery. It twists your own mind with the lies you tell yourself, making self-deception a comfortable prison.',
+        difficulty: 'Novice',
+        encounterLevel: 45,
+        powerPoints: 800,
+        controlReward: 'Unlocks Breath of Truth & +0.1 XP Multiplier.',
+        strengths: ['Self-deception', 'Justifying bad habits', 'Avoiding uncomfortable truths'],
+        weaknesses: ['Breath of Truth', 'Radical honesty in a journal', 'Seeking external accountability'],
+        origin: 'Greek',
+        domain: 'Lies & Self-Deception'
+    },
+    {
+        name: 'Onryō',
+        title: 'Kuro, The Echo',
+        description: 'A vengeful spirit from Japanese folklore, the Onryō chains you to your past. It creates an emotional haunting of guilt, shame, and nostalgia.',
+        difficulty: 'Adept',
+        encounterLevel: 50,
+        powerPoints: 1300,
+        controlReward: 'Unlocks Breath of Present & +0.1 XP Multiplier.',
+        strengths: ['Ruminating on past mistakes', 'Holding grudges', 'Living in nostalgia'],
+        weaknesses: ['Breath of Present', 'Mindfulness meditation', 'Forgiveness practices'],
+        origin: 'Japanese',
+        domain: 'Regret & Guilt'
+    },
+    {
+        name: 'Lucifuge',
+        title: 'Hana, The Veiled',
+        description: 'From Western occultism, Lucifuge Rofocale flees the light. This demon hides behind pride and ego, offering a false enlightenment that prevents true growth.',
+        difficulty: 'Adept',
+        encounterLevel: 55,
+        powerPoints: 2100,
+        controlReward: 'Unlocks Breath of Humility & +0.1 XP Multiplier.',
+        strengths: ['Ego-driven action', 'Refusing to ask for help', 'Inability to admit fault'],
+        weaknesses: ['Breath of Humility', 'Seeking mentorship', 'Deliberately trying something new you are bad at'],
+        origin: 'Occult (Western)',
+        domain: 'Pride & Ego'
+    },
+    {
+        name: 'Abaddon',
+        title: 'Rin, The Hollow',
+        description: 'The Hebrew "Destroyer," Abaddon brings the void. It manifests as a deep apathy and loss of meaning, a numbness disguised as peace.',
+        difficulty: 'Adept',
+        encounterLevel: 60,
+        powerPoints: 3400,
+        controlReward: 'Unlocks Breath of Flame & +0.1 XP Multiplier.',
+        strengths: ['Apathy', 'Loss of purpose', 'Cynicism', 'Nihilism'],
+        weaknesses: ['Breath of Flame', 'Connecting with core values', 'Acts of service or kindness'],
+        origin: 'Hebrew',
+        domain: 'Emptiness & Apathy'
+    },
+    {
+        name: 'Leviathan',
+        title: 'Soro, The Judge',
+        description: 'The great sea-beast of biblical lore, Leviathan coils jealousy around your heart. It rules the realm of comparison, self-hate, and resentment.',
+        difficulty: 'Master',
+        encounterLevel: 65,
+        powerPoints: 5500,
+        controlReward: 'Unlocks Breath of Gratitude & +0.1 XP Multiplier.',
+        strengths: ['Envy', 'Social comparison', 'Resentment', 'Self-hate'],
+        weaknesses: ['Breath of Gratitude', 'A daily gratitude practice', 'Celebrating others\' success'],
+        origin: 'Biblical',
+        domain: 'Comparison & Envy'
+    },
+    {
+        name: 'Naamah',
+        title: 'Kaji, The Siren',
+        description: 'A seductive demon from Hebrew lore, Naamah sings you into the soft death of comfort. She represents laziness and the addiction to ease.',
+        difficulty: 'Master',
+        encounterLevel: 70,
+        powerPoints: 8000,
+        controlReward: 'Unlocks Breath of Iron & +0.1 XP Multiplier.',
+        strengths: ['Addiction to comfort', 'Avoiding necessary challenges', 'Procrastination'],
+        weaknesses: ['Breath of Iron', 'Embracing voluntary hardship', 'Setting and pursuing difficult goals'],
+        origin: 'Hebrew / Mesopotamian',
+        domain: 'Comfort & Laziness'
+    },
+    {
+        name: 'Baal',
+        title: 'Taji, The Mirror',
+        description: 'A Canaanite deity of great power, Baal splits your identity. It shows you a thousand reflections, none of them true, creating inner chaos and a fractured sense of self.',
+        difficulty: 'Master',
+        encounterLevel: 75,
+        powerPoints: 12000,
+        controlReward: 'Unlocks Breath of Unity & +0.1 XP Multiplier.',
+        strengths: ['Split identity', 'Lack of authenticity', 'People-pleasing', 'Inner chaos'],
+        weaknesses: ['Breath of Unity', 'Defining personal values', 'Spending time in solitude'],
+        origin: 'Canaanite',
+        domain: 'Duality & Inner Chaos'
+    },
+    {
+        name: 'Apep',
+        title: 'Mio, The Storm',
+        description: 'The Egyptian serpent of chaos, Apep storms within you. It is the embodiment of raw, uncontrolled emotion: rage, chaos, and impulse.',
+        difficulty: 'Grandmaster',
+        encounterLevel: 82,
+        powerPoints: 18000,
+        controlReward: 'Unlocks Breath of Calm & +0.1 XP Multiplier.',
+        strengths: ['Rage', 'Impulsive action', 'Emotional volatility'],
+        weaknesses: ['Breath of Calm', 'Emotional regulation techniques', 'Observing emotions without acting on them'],
+        origin: 'Egyptian',
+        domain: 'Emotion & Impulse'
+    },
+    {
+        name: 'Belial',
+        title: 'Zen, The Watcher',
+        description: 'From Hebrew texts, Belial, the "worthless one," tricks you with the illusion of control. It represents the fear of surrender and an obsession with order.',
+        difficulty: 'Grandmaster',
+        encounterLevel: 90,
+        powerPoints: 28000,
+        controlReward: 'Unlocks Breath of Flow & +0.1 XP Multiplier.',
+        strengths: ['Obsession with order', 'Fear of uncertainty', 'Micromanagement'],
+        weaknesses: ['Breath of Flow', 'Practicing surrender', 'Embracing spontaneity'],
+        origin: 'Hebrew',
+        domain: 'Control & Fear'
+    },
+    {
+        name: 'Mara',
+        title: 'Muzan — The Desire Itself',
+        description: 'From Buddhist tradition, Mara is the lord of illusion. This is not a demon outside of you, but the architect of illusion itself—the ultimate attachment to the illusion of the self.',
+        difficulty: 'Sage',
+        encounterLevel: 100,
+        powerPoints: 50000,
+        controlReward: 'The title of "Sage."',
+        strengths: ['Ultimate attachment', 'The illusion of self', 'Craving and aversion'],
+        weaknesses: ['True Breath — Breath of Nothingness', 'Deep meditation', 'Non-attachment'],
+        origin: 'Buddhist',
+        domain: 'All Realms'
+    }
+];

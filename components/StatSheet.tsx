@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PlayerStats } from '../types.js';
+import type { PlayerStats } from '../types.ts';
 
 interface StatCardProps {
     icon: React.ReactNode;

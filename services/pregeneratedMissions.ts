@@ -1,4 +1,4 @@
-import type { Mission } from '../types.js';
+import type { Mission } from '../types.ts';
 
 interface DailyWisdom {
     day: number;
@@ -13,7 +13,7 @@ interface DailyWisdom {
 export const PREGENERATED_JOURNEY: DailyWisdom[] = [
     // Day 1-10: Realm of Awakening (Level 30-39), 25 XP
     {
-        day: 1, title: 'LEVEL 30: The First Door', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'Neru, the Whispering Temptation of procrastination.',
+        day: 1, title: 'LEVEL 30: The First Door', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'A whisper of temptation, Neru, stirs in the shadows of inaction.',
         missions: [
             { title: 'The First Step', description: 'Take a 10-minute walk outside, observing your surroundings without judgment.', category: 'Health', difficulty: 'Easy' },
             { title: 'Financial Awareness', description: 'Track every single expense today, no matter how small.', category: 'Wealth', difficulty: 'Easy' },
@@ -29,7 +29,7 @@ export const PREGENERATED_JOURNEY: DailyWisdom[] = [
         ]
     },
     {
-        day: 3, title: 'LEVEL 31: Clearing the Path', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'The demon of Clutter, Zorga, obscures the path.',
+        day: 3, title: 'LEVEL 31: Clearing the Path', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'A cluttered space is a welcome home for Neru.',
         missions: [
             { title: 'Foundational Strength', description: 'Perform 10 push-ups (or knee push-ups). Focus on form.', category: 'Health', difficulty: 'Easy' },
             { title: 'De-clutter a Space', description: 'Spend 15 minutes organizing one small area of your workspace or room.', category: 'Wealth', difficulty: 'Easy' },
@@ -45,11 +45,11 @@ export const PREGENERATED_JOURNEY: DailyWisdom[] = [
         ]
     },
     {
-        day: 5, title: 'LEVEL 32: The First Demon', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'Zorga, the demon of Clutter, has appeared. Control it.',
+        day: 5, title: 'LEVEL 32: The First Shadow', realm: 'Realm I - The Mortal Breath', xp: 25, breathStyle: 'Iron Lung Breathing', kazukiWatch: 'Neru senses your new strength. It will test your focus.',
         missions: [
             { title: 'Sun Salutation', description: 'Perform 5 rounds of sun salutations to energize your body.', category: 'Health', difficulty: 'Easy' },
             { title: 'Skill Sharpening', description: 'Spend 20 minutes practicing a core skill related to your work.', category: 'Wealth', difficulty: 'Easy' },
-            { title: 'Control Zorga: The Purge', description: 'Dedicate 30 uninterrupted minutes to decluttering one physical or digital space.', category: 'Soul', difficulty: 'Hard' },
+            { title: 'Weaken Neru: Gauntlet of Focus', description: 'Complete two 45-minute deep work sessions with zero distractions. This trial directly weakens Neru.', category: 'Soul', difficulty: 'Hard' },
         ]
     },
      {

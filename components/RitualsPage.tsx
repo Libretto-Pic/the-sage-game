@@ -1,7 +1,7 @@
 // Implemented the RitualsPage for managing recurring missions.
 import React, { useState } from 'react';
-import type { RecurringMission } from '../types.js';
-import { MISSION_CATEGORIES } from '../constants.js';
+import type { RecurringMission } from '../types.ts';
+import { MISSION_CATEGORIES } from '../constants.ts';
 
 interface RitualsPageProps {
   recurringMissions: RecurringMission[];

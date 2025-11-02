@@ -1,13 +1,14 @@
 // Implemented the Dashboard component to serve as the main landing view.
 import React from 'react';
-import type { PlayerState } from '../types.js';
-import DailyMissions from './DailyMissions.js';
-import StatSheet from './StatSheet.js';
-import UnlockedPowers from './UnlockedPowers.js';
-import ReflectionJournal from './ReflectionJournal.js';
-import EmergencyMissionCard from './EmergencyMissionCard.js';
-import ReadingChallenge from './ReadingChallenge.js';
-import { LEVEL_TITLES } from '../services/lore.js';
+import type { PlayerState } from '../types.ts';
+import DailyMissions from './DailyMissions.tsx';
+import StatSheet from './StatSheet.tsx';
+import UnlockedPowers from './UnlockedPowers.tsx';
+import ReflectionJournal from './ReflectionJournal.tsx';
+import EmergencyMissionCard from './EmergencyMissionCard.tsx';
+import ReadingChallenge from './ReadingChallenge.tsx';
+import PowerPointsTracker from './PowerPointsTracker.tsx';
+import { LEVEL_TITLES } from '../services/lore.ts';
 
 interface DashboardProps {
     playerState: PlayerState;
@@ -34,6 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({ playerState, saveJournalEntry, on
                 </div>
 
                 <div className="space-y-6">
+                    <PowerPointsTracker powerPoints={playerState.powerPoints} />
                     <UnlockedPowers playerLevel={playerState.level} />
                     <EmergencyMissionCard onPracticeBreathing={onPracticeBreathing} />
                     <ReflectionJournal saveJournalEntry={saveJournalEntry} />

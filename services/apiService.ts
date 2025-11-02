@@ -1,4 +1,4 @@
-import type { PlayerState } from '../types.js';
+import type { PlayerState } from '../types.ts';
 
 /**
  * Serializes the player state to a JSON file and triggers a download.
